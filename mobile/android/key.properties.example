@@ -1,0 +1,4 @@
+storeFile=C:/secure-keys/santiye-takip-upload.jks
+storePassword=CHANGE_ME
+keyAlias=santiye-takip
+keyPassword=CHANGE_ME
