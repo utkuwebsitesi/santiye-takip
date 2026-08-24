@@ -2,7 +2,7 @@
 @section('title', 'Tanker Stokları')
 @section('heading', 'Tanker Stokları')
 @section('content')
-<div class="page-title"><div><h1>Tanker Yakıt Stokları</h1><p>Alımlar kasadan düşer; araç ikmalleri tanker stokundan düşer.</p></div><div class="page-actions">@if(auth()->user()->isAdmin())<a class="btn secondary" href="{{ route('tankers.manage') }}">Tankerleri Yönet</a>@endif <a class="btn primary" href="{{ route('tankers.purchase.create') }}">+ Tankere Yakıt Al</a></div></div>
+<div class="page-title"><div><h1>Tanker Yakıt Stokları</h1><p>Alımlar kasadan düşer; araç ikmalleri tanker stokundan düşer.</p></div><div class="page-actions">@if(auth()->user()->hasPermission('tankers.manage'))<a class="btn secondary" href="{{ route('tankers.manage') }}">Tankerleri Yönet</a>@endif @if(auth()->user()->hasPermission('tankers.purchase'))<a class="btn primary" href="{{ route('tankers.purchase.create') }}">+ Tankere Yakıt Al</a>@endif</div></div>
 <section class="stats tanker-stats">
 @foreach($tankers as $tanker)
     <article @class(['featured' => $loop->first])><span>{{ $tanker->name }}</span><strong>{{ number_format($tanker->stock_liters, 3, ',', '.') }} L</strong><small>Son alış fiyatı: {{ number_format($tanker->average_unit_cost, 4, ',', '.') }} ₺/L<br>Tahmini stok değeri: {{ number_format($tanker->stock_liters * $tanker->average_unit_cost, 2, ',', '.') }} ₺</small></article>

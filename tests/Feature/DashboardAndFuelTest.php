@@ -274,6 +274,30 @@ class DashboardAndFuelTest extends TestCase
             });
     }
 
+    public function test_dashboard_compact_recent_list_keeps_older_recent_dates_accessible(): void
+    {
+        Carbon::setTestNow('2026-08-22 12:00:00');
+        $user = User::factory()->create();
+        $dates = array_merge(
+            array_fill(0, 4, '2026-08-22'),
+            array_fill(0, 10, '2026-08-21'),
+            array_fill(0, 7, '2026-08-20'),
+            array_fill(0, 4, '2026-08-19'),
+        );
+
+        foreach ($dates as $index => $date) {
+            Transaction::create([
+                'type' => 'expense', 'category' => 'Test', 'description' => 'Kompakt hareket '.$index,
+                'amount' => 100 + $index, 'occurred_on' => $date, 'created_by' => $user->id,
+            ]);
+        }
+
+        $this->actingAs($user)->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('19.08.2026')
+            ->assertViewHas('recentTransactions', fn ($items): bool => $items->count() === 25);
+    }
+
     public function test_admin_can_delete_only_a_tanker_without_any_history(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);

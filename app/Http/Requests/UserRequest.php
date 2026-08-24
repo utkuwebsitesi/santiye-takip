@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
+use App\Models\Permission;
 
 class UserRequest extends FormRequest
 {
@@ -31,6 +32,9 @@ class UserRequest extends FormRequest
             'username' => ['required', 'string', 'max:100', 'regex:/^[a-z0-9._-]+$/', Rule::unique('users')->ignore($user)],
             'role' => ['required', Rule::in($this->user()?->isSuperAdmin() ? ['super_admin', 'admin', 'personnel'] : ['admin', 'personnel'])],
             'is_active' => ['nullable', 'boolean'],
+            'permission_form' => ['nullable', 'boolean'],
+            'permission_keys' => ['nullable', 'array'],
+            'permission_keys.*' => ['string', Rule::in(array_keys(Permission::catalog()))],
             'password' => [...$password, 'confirmed', Password::min(10)->letters()->mixedCase()->numbers()],
         ];
     }

@@ -18,20 +18,20 @@ class ReportController extends Controller
     {
         $transactions = Transaction::with('creator')
             ->where('affects_cash', true)
-            ->when($request->user()->isAdmin() && $request->boolean('with_deleted'), fn ($q) => $q->withTrashed())
+            ->when($request->user()->hasPermission('transactions.manage') && $request->boolean('with_deleted'), fn ($q) => $q->withTrashed())
             ->when($request->filled('from'), fn ($q) => $q->whereDate('occurred_on', '>=', $request->date('from')))
             ->when($request->filled('to'), fn ($q) => $q->whereDate('occurred_on', '<=', $request->date('to')))
             ->when($request->filled('category'), fn ($q) => $q->where('category', $request->string('category')))
             ->when($request->filled('created_by'), fn ($q) => $q->where('created_by', $request->integer('created_by')))
-            ->latest('occurred_on')->paginate(25, ['*'], 'transactions_page')->withQueryString();
+            ->latest('occurred_on')->latest('id')->paginate(25, ['*'], 'transactions_page')->withQueryString();
 
         $fuelQuery = FuelEntry::with(['vehicle', 'tanker', 'creator'])
-            ->when($request->user()->isAdmin() && $request->boolean('with_deleted'), fn ($q) => $q->withTrashed())
+            ->when($request->user()->hasPermission('fuel.manage') && $request->boolean('with_deleted'), fn ($q) => $q->withTrashed())
             ->when($request->filled('from'), fn ($q) => $q->whereDate('fuel_date', '>=', $request->date('from')))
             ->when($request->filled('to'), fn ($q) => $q->whereDate('fuel_date', '<=', $request->date('to')))
             ->when($request->filled('vehicle_id'), fn ($q) => $q->where('vehicle_id', $request->integer('vehicle_id')));
 
-        $fuel = (clone $fuelQuery)->latest('fuel_date')->paginate(25, ['*'], 'fuel_page')->withQueryString();
+        $fuel = (clone $fuelQuery)->latest('fuel_date')->latest('id')->paginate(25, ['*'], 'fuel_page')->withQueryString();
         $summaryRows = (clone $fuelQuery)->get();
         $fuelTotals = $summaryRows->groupBy(fn ($row) => $row->fuel_date->toDateString())
             ->map(fn ($rows, $date) => (object) ['period' => $date, 'liters' => $rows->sum('liters'), 'amount' => $rows->sum('total_amount')])
@@ -49,7 +49,7 @@ class ReportController extends Controller
         });
 
         $maintenance = MaintenanceEntry::with(['vehicle', 'creator'])
-            ->when($request->user()->isAdmin() && $request->boolean('with_deleted'), fn ($q) => $q->withTrashed())
+            ->when($request->user()->hasPermission('maintenance.manage') && $request->boolean('with_deleted'), fn ($q) => $q->withTrashed())
             ->when($request->filled('from'), fn ($q) => $q->whereDate('maintenance_date', '>=', $request->date('from')))
             ->when($request->filled('to'), fn ($q) => $q->whereDate('maintenance_date', '<=', $request->date('to')))
             ->when($request->filled('vehicle_id'), fn ($q) => $q->where('vehicle_id', $request->integer('vehicle_id')))

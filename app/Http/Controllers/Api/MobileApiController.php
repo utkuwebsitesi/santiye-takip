@@ -7,6 +7,7 @@ use App\Models\AppSetting;
 use App\Models\AuditLog;
 use App\Models\FuelEntry;
 use App\Models\MaintenanceEntry;
+use App\Models\Permission;
 use App\Models\SystemNotification;
 use App\Models\Tanker;
 use App\Models\TankerMovement;
@@ -717,7 +718,8 @@ class MobileApiController extends Controller
     private function userPayload(User $user): array
     {
         return ['id' => $user->id, 'name' => $user->name, 'username' => $user->username, 'role' => $user->role, 'is_active' => $user->is_active,
-            'is_admin' => $user->isAdmin(), 'is_super_admin' => $user->isSuperAdmin()];
+            'is_admin' => $user->isAdmin(), 'is_super_admin' => $user->isSuperAdmin(),
+            'permissions' => $user->isSuperAdmin() ? array_keys(Permission::catalog()) : $user->permissions()->pluck('key')->values()->all()];
     }
 
     private function perPage(Request $request): int

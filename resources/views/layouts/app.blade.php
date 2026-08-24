@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', $brand['software_name'])</title>
     <link rel="icon" type="image/svg+xml" href="{{ asset('assets/brand-mark.svg') }}?v=20260731-1">
-    <link rel="stylesheet" href="{{ asset('assets/app.css') }}?v=20260803-dashboard-6">
+    <link rel="stylesheet" href="{{ asset('assets/app.css') }}?v=20260824-compact-1">
 </head>
 <body>
 <div class="shell">

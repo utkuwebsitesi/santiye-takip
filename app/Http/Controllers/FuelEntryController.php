@@ -23,7 +23,7 @@ class FuelEntryController extends Controller
             ->when($request->filled('vehicle_id'), fn ($q) => $q->where('vehicle_id', $request->integer('vehicle_id')))
             ->when($request->filled('from'), fn ($q) => $q->whereDate('fuel_date', '>=', $request->date('from')))
             ->when($request->filled('to'), fn ($q) => $q->whereDate('fuel_date', '<=', $request->date('to')));
-        $items = (clone $query)->latest('fuel_date')->paginate(25)->withQueryString();
+        $items = (clone $query)->latest('fuel_date')->latest('id')->paginate(25)->withQueryString();
         $summaryRows = $request->filled('vehicle_id') ? (clone $query)->get() : collect();
 
         return view('fuel.index', [

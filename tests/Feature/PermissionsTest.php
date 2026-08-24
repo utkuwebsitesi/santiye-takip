@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\AuditLog;
+use App\Models\Permission;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Models\Vehicle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -92,5 +94,50 @@ class PermissionsTest extends TestCase
             ->assertSee('1.000,00 ₺')
             ->assertSee('1.250,00 ₺')
             ->assertDontSee('&quot;description&quot;', false);
+    }
+
+    public function test_user_can_be_granted_vehicle_management_without_becoming_an_admin(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $personnel = User::factory()->create(['role' => 'personnel']);
+
+        $this->actingAs($admin)->put(route('users.update', $personnel), [
+            'name' => $personnel->name,
+            'username' => $personnel->username,
+            'role' => 'personnel',
+            'is_active' => 1,
+            'permission_form' => 1,
+            'permission_keys' => ['dashboard.view', 'vehicles.manage'],
+        ])->assertRedirect(route('users.index'));
+
+        $personnel->refresh();
+        $this->assertTrue($personnel->hasPermission('vehicles.manage'));
+        $this->assertFalse($personnel->isAdmin());
+
+        $this->actingAs($personnel)->get(route('araclar.create'))->assertOk();
+        $this->actingAs($personnel)->post(route('araclar.store'), [
+            'type' => 'vehicle', 'name' => 'Yetkili Servis', 'plate' => '06 YET 01', 'is_active' => 1,
+        ])->assertRedirect(route('araclar.index'));
+        $this->assertDatabaseHas('vehicles', ['plate' => '06 YET 01']);
+    }
+
+    public function test_user_without_tanker_management_cannot_open_tanker_manager(): void
+    {
+        $personnel = User::factory()->create(['role' => 'personnel']);
+
+        $this->actingAs($personnel)->get(route('tankers.manage'))->assertForbidden();
+        $this->assertTrue(Permission::where('key', 'tankers.manage')->exists());
+    }
+
+    public function test_user_form_lists_granular_permissions(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)->get(route('users.create'))
+            ->assertOk()
+            ->assertSee('Kullanıcı yetkileri')
+            ->assertSee('Tanker ekleme / düzenleme / silme')
+            ->assertSee('Araç / makine ekleme / düzenleme / silme')
+            ->assertSee('permission_keys[]', false);
     }
 }

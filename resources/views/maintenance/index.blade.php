@@ -3,7 +3,7 @@
 @section('heading', 'Bakım / Onarım')
 @section('content')
 <div class="maintenance-page">
-    <div class="page-title"><div><h1>Araç Bakım Takibi</h1><p>Bakım geçmişi, maliyetler ve yaklaşan bakım hatırlatmaları.</p></div><a class="btn primary" href="{{ route('maintenance.create') }}">+ Yeni Bakım</a></div>
+    <div class="page-title"><div><h1>Araç Bakım Takibi</h1><p>Bakım geçmişi, maliyetler ve yaklaşan bakım hatırlatmaları.</p></div>@if(auth()->user()->hasPermission('maintenance.create'))<a class="btn primary" href="{{ route('maintenance.create') }}">+ Yeni Bakım</a>@endif</div>
     <form class="filters wrap" method="get">
         <label>Araç / Makine<select name="vehicle_id"><option value="">Tümü</option>@foreach($vehicles as $vehicle)<option value="{{ $vehicle->id }}" @selected(request('vehicle_id') == $vehicle->id)>{{ $vehicle->plate ?? $vehicle->code }} · {{ $vehicle->name }}</option>@endforeach</select></label>
         <label>Başlangıç<input type="date" name="from" value="{{ request('from') }}"></label>
@@ -36,7 +36,7 @@
                 <td><span class="badge {{ $due ? 'due' : 'planned' }}">{{ $due ? 'Bakım zamanı' : ($entry->next_maintenance_date || $entry->next_meter_value || $entry->next_operating_hours ? 'Planlandı' : 'Takvim yok') }}</span></td>
                 <td class="maintenance-actions">
                     @if($entry->document_path)<a href="{{ route('documents.maintenance', $entry) }}">Belge</a>@endif
-                    @if(auth()->user()->isAdmin())<a href="{{ route('maintenance.edit', $entry) }}">Düzenle</a>@endif
+                    @if(auth()->user()->hasPermission('maintenance.manage'))<a href="{{ route('maintenance.edit', $entry) }}">Düzenle</a>@endif
                 </td>
             </tr>
         @empty

@@ -28,7 +28,7 @@ class TransactionController extends Controller
             ->when($request->filled('type'), fn ($q) => $q->where('type', $request->string('type')))
             ->when($request->filled('from'), fn ($q) => $q->whereDate('occurred_on', '>=', $request->date('from')))
             ->when($request->filled('to'), fn ($q) => $q->whereDate('occurred_on', '<=', $request->date('to')))
-            ->latest('occurred_on')->paginate(25)->withQueryString();
+            ->latest('occurred_on')->latest('id')->paginate(25)->withQueryString();
 
         return view('transactions.index', compact('items'));
     }

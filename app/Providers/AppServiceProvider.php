@@ -55,11 +55,17 @@ class AppServiceProvider extends ServiceProvider
                         'users' => ['users.index', 'users.*'],
                         'system_management' => ['system.index', 'system.*'],
                     ];
+                    $navigationPermissions = [
+                        'dashboard' => 'dashboard.view', 'transaction_create' => 'transactions.create',
+                        'transactions' => 'transactions.view', 'fuel_report' => 'fuel.view',
+                        'tankers' => 'tankers.view', 'maintenance' => 'maintenance.view',
+                        'reports' => 'reports.view', 'vehicles' => 'vehicles.view',
+                        'audit' => 'audit.view', 'users' => 'users.manage',
+                        'system_management' => 'system.manage',
+                    ];
                     $user = auth()->user();
                     $navigation = NavigationItem::where('is_enabled', true)->orderBy('sort_order')->get()
-                        ->filter(fn ($item) => $item->minimum_role === 'personnel'
-                            || ($item->minimum_role === 'admin' && $user->isAdmin())
-                            || ($item->minimum_role === 'super_admin' && $user->isSuperAdmin()))
+                        ->filter(fn ($item) => $user->hasPermission($navigationPermissions[$item->key] ?? 'dashboard.view'))
                         ->filter(fn ($item) => isset($routes[$item->key]))
                         ->map(function ($item) use ($routes) {
                             [$route, $pattern] = $routes[$item->key];

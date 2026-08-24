@@ -5,6 +5,8 @@ use App\Http\Middleware\EnforceSessionTimeout;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\InstallationOpen;
 use App\Http\Middleware\PreventBrowserCache;
+use App\Http\Middleware\PermissionMiddleware;
+use App\Http\Middleware\EnsureMobilePermission;
 use App\Http\Middleware\SuperAdminOnly;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Application;
@@ -30,9 +32,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'session.timeout' => EnforceSessionTimeout::class,
             'installation.open' => InstallationOpen::class,
             'superadmin' => SuperAdminOnly::class,
+            'permission' => PermissionMiddleware::class,
             'mobile.auth' => \App\Http\Middleware\AuthenticateMobileToken::class,
             'mobile.admin' => \App\Http\Middleware\EnsureMobileAdmin::class,
             'mobile.superadmin' => \App\Http\Middleware\EnsureMobileSuperAdmin::class,
+            'mobile.permission' => EnsureMobilePermission::class,
         ]);
         $middleware->redirectGuestsTo(fn () => route('login'));
     })

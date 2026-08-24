@@ -57,10 +57,10 @@ class FuelService
             $invalid = ($previous?->{$field} !== null && (float) $data[$field] < (float) $previous->{$field})
                 || ($next?->{$field} !== null && (float) $data[$field] > (float) $next->{$field});
 
-            if ($invalid && (! $user->isAdmin() || ! $overrideReason)) {
+            if ($invalid && (! $user->hasPermission('fuel.manage') || ! $overrideReason)) {
                 throw ValidationException::withMessages([
                     $field => "{$label} değeri kronolojik kayıtlarla uyumlu değil.",
-                    'meter_override_reason' => $user->isAdmin() ? 'Sayaç istisnası için yönetici gerekçesi zorunludur.' : null,
+                    'meter_override_reason' => $user->hasPermission('fuel.manage') ? 'Sayaç istisnası için yakıt yönetimi yetkisi olan kullanıcı gerekçesi zorunludur.' : null,
                 ]);
             }
         }

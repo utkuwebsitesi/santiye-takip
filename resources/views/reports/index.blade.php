@@ -9,7 +9,7 @@
 <label>Kategori<select name="category"><option value="">Tümü</option>@foreach($categories as $category)<option @selected(request('category')===$category)>{{ $category }}</option>@endforeach</select></label>
 <label>Personel<select name="created_by"><option value="">Tümü</option>@foreach($users as $user)<option value="{{ $user->id }}" @selected(request('created_by')==$user->id)>{{ $user->name }}</option>@endforeach</select></label>
 <label>Araç / Makine<select name="vehicle_id"><option value="">Tümü</option>@foreach($vehicles as $vehicle)<option value="{{ $vehicle->id }}" @selected(request('vehicle_id')==$vehicle->id)>{{ $vehicle->display_name }}</option>@endforeach</select></label>
-@if(auth()->user()->isAdmin())<label class="check"><input type="checkbox" name="with_deleted" value="1" @checked(request('with_deleted'))> Silinenleri dahil et</label>@endif
+@if(auth()->user()->hasPermission('transactions.manage'))<label class="check"><input type="checkbox" name="with_deleted" value="1" @checked(request('with_deleted'))> Silinenleri dahil et</label>@endif
 <button class="btn primary">Raporla</button></form>
 <div class="grid two">
 <section class="card table-wrap"><div class="card-head"><h2>Kasa Hareketleri</h2></div><table><thead><tr><th>Tarih</th><th>Tür</th><th>Kategori</th><th>Personel</th><th>Tutar</th></tr></thead><tbody>

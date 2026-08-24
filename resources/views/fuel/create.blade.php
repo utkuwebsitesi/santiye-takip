@@ -17,7 +17,7 @@
     <label class="meter-field">Çalışma saati<input type="number" name="operating_hours" value="{{ old('operating_hours') }}" min="0" step="0.1" inputmode="decimal"></label>
     <label>Akaryakıt istasyonu<input name="station" value="{{ old('station') }}" maxlength="150"></label>
     <label class="full">Not<textarea name="notes" rows="3" maxlength="1000">{{ old('notes') }}</textarea></label>
-    @if(auth()->user()->isAdmin())<label class="full"><span>Sayaç istisnası gerekçesi <small class="label-inline-note">(KM veya çalışma saati önceki değerden düşükse doldurun)</small></span><textarea name="meter_override_reason">{{ old('meter_override_reason') }}</textarea></label>@endif
+    @if(auth()->user()->hasPermission('fuel.manage'))<label class="full"><span>Sayaç istisnası gerekçesi <small class="label-inline-note">(KM veya çalışma saati önceki değerden düşükse doldurun)</small></span><textarea name="meter_override_reason">{{ old('meter_override_reason') }}</textarea></label>@endif
     <label class="full">Yakıt fişi / faturası<input type="file" name="receipt" accept=".jpg,.jpeg,.png,.webp,.pdf"></label>
     <div class="form-actions full"><a class="btn secondary" href="{{ route('fuel.index') }}">Vazgeç</a><button class="btn primary">Hesapla, Kaydet ve Kilitle</button></div>
 </form>

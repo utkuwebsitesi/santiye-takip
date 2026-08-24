@@ -36,7 +36,7 @@ class DashboardController extends Controller
         $totalFuelLiters = FuelEntry::query()->sum('liters');
         $tankers = Tanker::query()->where('is_active', true)->orderBy('name')->get();
         $highestTankerStock = max(1, (float) $tankers->max('stock_liters'));
-        $recentFuel = FuelEntry::with(['vehicle', 'tanker', 'creator'])->latest('fuel_date')->limit(8)->get();
+        $recentFuel = FuelEntry::with(['vehicle', 'tanker', 'creator'])->latest('fuel_date')->latest('id')->limit(8)->get();
         $recentFuelPeak = max(1, (float) $recentFuel->take(4)->max('liters'));
         $dailyCashNet = Transaction::query()
             ->where('affects_cash', true)
@@ -119,7 +119,7 @@ class DashboardController extends Controller
             'totalTankerStock' => $tankers->sum('stock_liters'),
             'highestTankerStock' => $highestTankerStock,
             'dueMaintenance' => app(MaintenanceReminderService::class)->due()->take(4),
-            'recentTransactions' => Transaction::with('creator')->where('affects_cash', true)->latest('occurred_on')->limit(8)->get(),
+            'recentTransactions' => Transaction::with('creator')->where('affects_cash', true)->latest('occurred_on')->latest('id')->limit(25)->get(),
             'recentFuel' => $recentFuel,
             'recentFuelPeak' => $recentFuelPeak,
         ]);
