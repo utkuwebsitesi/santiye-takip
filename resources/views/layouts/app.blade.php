@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', $brand['software_name'])</title>
     <link rel="icon" type="image/svg+xml" href="{{ asset('assets/brand-mark.svg') }}?v=20260731-1">
-    <link rel="stylesheet" href="{{ asset('assets/app.css') }}?v=20260824-reports-8">
+    <link rel="stylesheet" href="{{ asset('assets/app.css') }}?v=20260825-release-note-1">
 </head>
 <body>
 <div class="shell">
@@ -112,6 +112,15 @@
             @if(session('success'))<div class="alert success">{{ session('success') }}</div>@endif
             @if($errors->any())<div class="alert error"><strong>İşlem tamamlanamadı.</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
             @yield('content')
+            <footer class="app-version" aria-label="Sürüm bilgisi">
+                <span class="app-version-name">{{ $brand['software_name'] }}</span>
+                <b>v{{ config('app.version', '1.1.0') }}</b>
+                <span class="app-version-date">{{ config('app.release_date', '25 Ağustos 2026') }}</span>
+                <details class="app-release-note">
+                    <summary>Sürüm notu</summary>
+                    <p>Yetki bazlı kullanıcı yönetimi, PDF/Excel rapor izinleri, kompakt kayıt listeleri ve cPanel uyumlu güvenli yedekleme iyileştirmeleri.</p>
+                </details>
+            </footer>
         </section>
     </main>
 </div>

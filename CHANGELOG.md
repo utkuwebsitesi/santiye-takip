@@ -1,5 +1,12 @@
 # Değişiklik Günlüğü
 
+## 2026-08-25 — v1.1.0
+
+- Kullanıcı yönetiminde araç ve tanker ekleme, düzenleme ve silme yetkileri ayrı ayrı tanımlanabilir hale getirildi.
+- Kasa ve yakıt raporlarının PDF/Excel dışa aktarma yetkileri kullanıcı bazında yönetilebilir hale getirildi.
+- Kasa ve rapor ekranlarındaki uzun kayıt listeleri kompakt, sayfalı ve mobil uyumlu görünüme taşındı.
+- `proc_open` kısıtlı cPanel sunucularında da çalışabilen PDO tabanlı güvenli veritabanı yedekleme geri dönüşü eklendi.
+
 ## 2026-08-03
 
 - Gösterge paneli afişteki açık kart, renk, küçük başlık ve çizgi grafik diline yaklaştırıldı; tanker görseli şeffaf arka planlı sürüme geçirildi.
