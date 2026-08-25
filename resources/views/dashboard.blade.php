@@ -43,7 +43,9 @@
         @endforeach
     </section>
 
+    @if(auth()->user()->hasAnyPermission(['tankers.view', 'fuel.view', 'maintenance.view']))
     <section class="poster-dashboard-grid">
+        @if(auth()->user()->hasPermission('tankers.view'))
         <article class="poster-card poster-tanker-card">
             <div class="poster-card-head"><div><h2>Tanker Stok Durumu</h2><small>Güncel stok ve dağılım</small></div>@if(auth()->user()->hasPermission('tankers.view'))<a href="{{ route('tankers.index') }}">Tüm stoklar</a>@endif</div>
             <div class="poster-tanker-body">
@@ -57,7 +59,9 @@
                 </div></div>
             </div>
         </article>
+        @endif
 
+        @if(auth()->user()->hasPermission('fuel.view'))
         <article class="poster-card poster-fleet-card">
             <div class="poster-card-head"><div><h2>Araç &amp; Makine Yakıt Takibi</h2><small>Son dağıtımlar</small></div>@if(auth()->user()->hasPermission('fuel.view'))<a href="{{ route('fuel.index') }}">Yakıt raporu</a>@endif</div>
             <div class="poster-fleet-list">
@@ -68,7 +72,9 @@
                 @endforelse
             </div>
         </article>
+        @endif
 
+        @if(auth()->user()->hasPermission('maintenance.view'))
         <article class="poster-card poster-maintenance-card">
             <div class="poster-card-head"><div><h2>Bakım Hatırlatmaları</h2><small>Yaklaşan ve geciken işlemler</small></div>@if(auth()->user()->hasPermission('maintenance.view'))<a href="{{ route('maintenance.index') }}">Bakımı gör</a>@endif</div>
             <div class="poster-maintenance-list">
@@ -79,28 +85,95 @@
                 @endforelse
             </div>
         </article>
+        @endif
     </section>
+    @endif
 
+    @if(auth()->user()->hasAnyPermission(['transactions.view', 'fuel.view']))
     <div class="grid two poster-detail-grid">
-    <section class="card dashboard-recent-card"><div class="card-head"><div><h2>Son Kasa Hareketleri</h2><small>Son 25 kayıt · en yeni üstte</small></div>@if(auth()->user()->hasPermission('transactions.view'))<a href="{{ route('transactions.index') }}">Tümünü Gör</a>@endif</div>
+    @if(auth()->user()->hasPermission('transactions.view'))
+    <section class="card dashboard-recent-card" data-inline-pagination data-page-size="10"><div class="card-head"><div><h2>Son Kasa Hareketleri</h2><small>Son {{ $recentTransactions->count() }} kayıt · en yeni üstte</small></div>@if(auth()->user()->hasPermission('transactions.view'))<a href="{{ route('transactions.index') }}">Tümünü Gör</a>@endif</div>
         <div class="compact-transaction-grid" role="list" aria-label="Son kasa hareketleri">
         @forelse($recentTransactions as $item)
-            <article class="compact-transaction-row" role="listitem">
+            <article class="compact-transaction-row {{ $item->type === 'income' ? 'is-income' : 'is-expense' }}" role="listitem" data-page-item>
                 <time datetime="{{ $item->occurred_on->toDateString() }}">{{ $item->occurred_on->format('d.m.Y') }}</time>
-                <div class="compact-transaction-main"><strong>{{ $item->category }}</strong><small title="{{ $item->description }}">{{ \Illuminate\Support\Str::limit($item->description, 58) }}</small><em>{{ $item->creator->name }}</em></div>
+                <div class="compact-transaction-main"><div class="compact-transaction-title"><span class="compact-transaction-type">{{ $item->type === 'income' ? 'Gelir' : 'Gider' }}</span><strong>{{ $item->category }}</strong></div><small title="{{ $item->description }}">{{ \Illuminate\Support\Str::limit($item->description, 100) }}</small><em>{{ $item->creator->name }}</em></div>
                 <b class="{{ $item->type === 'income' ? 'positive' : 'negative' }}">{{ $item->type === 'income' ? '+' : '-' }}{{ number_format($item->amount, 2, ',', '.') }} ₺</b>
             </article>
         @empty
             <p class="empty">Henüz kasa hareketi yok.</p>
         @endforelse
         </div>
+        @if($recentTransactions->count() > 10)
+        <div class="dashboard-inline-pagination" data-page-controls aria-label="Kasa hareketleri sayfalaması">
+            <span data-page-status aria-live="polite"></span>
+            <div class="dashboard-inline-pagination-actions">
+                <button type="button" data-page-prev aria-label="Önceki kasa hareketleri sayfası">‹ Önceki</button>
+                <span class="dashboard-inline-pagination-page" data-page-number aria-live="polite"></span>
+                <button type="button" data-page-next aria-label="Sonraki kasa hareketleri sayfası">Sonraki ›</button>
+            </div>
+        </div>
+        @endif
     </section>
+    @endif
+    @if(auth()->user()->hasPermission('fuel.view'))
     <section class="card"><div class="card-head"><h2>Son Yakıt Kayıtları</h2>@if(auth()->user()->hasPermission('fuel.view'))<a href="{{ route('fuel.index') }}">Tümünü Gör</a>@endif</div>
         <div class="table-wrap"><table><thead><tr><th>Tarih</th><th>Araç / Makine</th><th>Litre</th><th>Tutar</th></tr></thead><tbody>
         @forelse($recentFuel as $item)<tr><td>{{ $item->fuel_date->format('d.m.Y') }}</td><td>{{ $item->vehicle->display_name }}</td><td>{{ number_format($item->liters, 2, ',', '.') }} L</td><td class="negative">{{ number_format($item->total_amount, 2, ',', '.') }} ₺</td></tr>
         @empty<tr><td colspan="4" class="empty">Henüz yakıt kaydı yok.</td></tr>@endforelse
         </tbody></table></div>
     </section>
+    @endif
 </div>
+    @endif
 </div>
+<script>
+(() => {
+    const widget = document.querySelector('[data-inline-pagination]');
+    if (!widget) return;
+
+    const items = [...widget.querySelectorAll('[data-page-item]')];
+    const controls = widget.querySelector('[data-page-controls]');
+    if (!controls || items.length === 0) return;
+
+    const pageSize = Math.max(1, Number(widget.dataset.pageSize || 10));
+    const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+    let currentPage = 0;
+    const status = controls.querySelector('[data-page-status]');
+    const pageNumber = controls.querySelector('[data-page-number]');
+    const previous = controls.querySelector('[data-page-prev]');
+    const next = controls.querySelector('[data-page-next]');
+
+    const renderPage = () => {
+        const first = currentPage * pageSize;
+        const last = Math.min(items.length, first + pageSize);
+
+        items.forEach((item, index) => {
+            const visible = index >= first && index < last;
+            item.hidden = !visible;
+            item.setAttribute('aria-hidden', visible ? 'false' : 'true');
+        });
+
+        status.textContent = `${first + 1}–${last} / ${items.length} kayıt`;
+        pageNumber.textContent = `${currentPage + 1} / ${totalPages}`;
+        previous.disabled = currentPage === 0;
+        next.disabled = currentPage === totalPages - 1;
+    };
+
+    previous.addEventListener('click', () => {
+        if (currentPage > 0) {
+            currentPage -= 1;
+            renderPage();
+        }
+    });
+    next.addEventListener('click', () => {
+        if (currentPage < totalPages - 1) {
+            currentPage += 1;
+            renderPage();
+        }
+    });
+
+    renderPage();
+})();
+</script>
 @endsection

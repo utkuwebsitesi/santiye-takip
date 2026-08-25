@@ -91,7 +91,7 @@ class MobileAuthController extends Controller
             'role' => $user->role,
             'is_admin' => $user->isAdmin(),
             'is_super_admin' => $user->isSuperAdmin(),
-            'permissions' => $user->isSuperAdmin() ? array_keys(\App\Models\Permission::catalog()) : $user->permissions()->pluck('key')->values()->all(),
+            'permissions' => $user->effectivePermissionKeys(),
         ];
     }
 }

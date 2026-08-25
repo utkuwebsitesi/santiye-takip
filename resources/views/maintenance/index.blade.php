@@ -27,8 +27,8 @@
                 <td>{{ $entry->maintenance_date->format('d.m.Y') }}</td>
                 <td><strong>{{ $entry->vehicle->plate ?? $entry->vehicle->code }}</strong><small>{{ $entry->vehicle->name }}</small></td>
                 <td>{{ $entry->maintenance_type }}<small>{{ \Illuminate\Support\Str::limit($entry->description, 55) }}</small></td>
-                <td>{{ number_format($entry->cost, 2, ',', '.') }} ₺<small>{{ $entry->transaction_id ? 'Kasaya işlendi' : 'Yalnız takip' }}</small></td>
-                <td>
+                <td class="numeric">{{ number_format($entry->cost, 2, ',', '.') }} ₺<small>{{ $entry->transaction_id ? 'Kasaya işlendi' : 'Yalnız takip' }}</small></td>
+                <td class="numeric">
                     {{ $entry->next_maintenance_date?->format('d.m.Y') ?? '—' }}
                     @if($entry->next_meter_value)<small>{{ number_format($entry->next_meter_value, 0, ',', '.') }} km</small>@endif
                     @if($entry->next_operating_hours)<small>{{ number_format($entry->next_operating_hours, 1, ',', '.') }} saat</small>@endif

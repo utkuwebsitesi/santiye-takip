@@ -73,6 +73,12 @@
     .fuel-summary{grid-template-columns:1fr;gap:8px}.fuel-summary article{padding:11px 13px}
     .system-grid{grid-template-columns:1fr;gap:14px}.management-list>form,.menu-config{grid-template-columns:1fr}.system-actions{text-align:stretch}.system-actions .btn{width:100%}
 }
+
+.report-export-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 16px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:#fff;box-shadow:0 4px 14px rgba(13,31,58,.04)}
+.report-export-bar>div:first-child{display:grid;gap:2px}.report-export-bar strong{color:var(--navy);font-size:12px}.report-export-bar small{color:var(--muted);font-size:10px}
+.report-export-groups{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}.report-export-groups span{margin-left:9px;color:#728096;font-size:10px;font-weight:800}.report-export-groups span:first-child{margin-left:0}.report-export-groups .btn{min-height:30px;padding:5px 10px;font-size:11px}
+.table-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.table-actions form{margin:0}.link-button{padding:0;border:0;background:none;color:var(--navy2);font:inherit;font-size:12px;cursor:pointer}.link-button:hover{text-decoration:underline}.danger-text{color:var(--red)}
+@media(max-width:760px){.report-export-bar{align-items:flex-start;display:grid;gap:9px}.report-export-groups{justify-content:flex-start}.report-export-groups span{margin-left:0;flex-basis:100%}.report-export-groups span:not(:first-child){margin-top:5px}}
 @media(max-width:600px){
     .login-page{
         display:flex;
@@ -184,19 +190,46 @@
 .poster-detail-grid{align-items:start}
 .dashboard-recent-card .card-head>div{display:grid;gap:2px}
 .dashboard-recent-card .card-head small{color:#8692a4;font-size:10px}
-.compact-transaction-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:18px;padding:2px 17px 7px}
-.compact-transaction-row{display:grid;grid-template-columns:70px minmax(0,1fr) auto;gap:8px;align-items:center;min-width:0;padding:9px 0;border-bottom:1px solid #e8ebf0}
-.compact-transaction-row time{color:#5e6d82;font-size:10px;white-space:nowrap}
+.compact-transaction-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px;padding:10px 17px 9px}
+.compact-transaction-row{display:grid;grid-template-columns:66px minmax(0,1fr) auto;gap:7px;align-items:center;min-width:0;padding:9px 10px;border:1px solid #e4e9f0;border-left:3px solid #d94a4a;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(13,31,58,.035)}
+.compact-transaction-row.is-income{border-left-color:#168b5b}
+.compact-transaction-row[hidden]{display:none!important}
+.compact-transaction-row time{display:inline-flex;align-items:center;align-self:start;width:max-content;margin-top:2px;padding:3px 4px;border-radius:6px;background:#fff4f3;color:#b04444;font-size:9.5px;font-weight:700;white-space:nowrap}
+.compact-transaction-row.is-income time{background:#eff9f3;color:#168b5b}
 .compact-transaction-main{display:grid;min-width:0;gap:1px}
-.compact-transaction-main strong{overflow:hidden;color:var(--navy);font-size:10px;text-overflow:ellipsis;white-space:nowrap}
-.compact-transaction-main small{overflow:hidden;color:#68778c;font-size:9px;text-overflow:ellipsis;white-space:nowrap}
+.compact-transaction-title{display:flex;align-items:center;min-width:0;gap:5px}
+.compact-transaction-type{display:inline-flex;flex:0 0 auto;align-items:center;padding:2px 5px;border-radius:999px;background:#fff0ef;color:#b04444;font-size:7px;font-weight:800;letter-spacing:.03em;text-transform:uppercase}
+.is-income .compact-transaction-type{background:#eaf8f0;color:#168b5b}
+.compact-transaction-main strong{min-width:0;overflow:hidden;color:var(--navy);font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+.compact-transaction-main small{display:-webkit-box;overflow:hidden;color:#68778c;font-size:9px;line-height:1.28;text-overflow:ellipsis;white-space:normal;-webkit-box-orient:vertical;-webkit-line-clamp:2}
 .compact-transaction-main em{overflow:hidden;color:#9aa5b4;font-size:8px;font-style:normal;text-overflow:ellipsis;white-space:nowrap}
-.compact-transaction-row>b{font-size:10px;white-space:nowrap}
+.compact-transaction-row>b{padding:3px 5px;border-radius:6px;background:#fff0ef;font-size:9.5px;white-space:nowrap}
+.compact-transaction-row.is-income>b{background:#eaf8f0}
+.dashboard-inline-pagination{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 17px 12px;border-top:1px solid #e8ebf0;color:#8692a4;font-size:10px}
+.dashboard-inline-pagination-actions{display:flex;align-items:center;gap:6px}
+.dashboard-inline-pagination button{min-height:26px;padding:3px 8px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--navy2);font:inherit;cursor:pointer;transition:background .15s ease,border-color .15s ease,color .15s ease}
+.dashboard-inline-pagination button:hover:not(:disabled){border-color:var(--gold);background:#fff9ec;color:var(--navy)}
+.dashboard-inline-pagination button:disabled{cursor:not-allowed;color:#a7b0bd;background:#f7f8fa}
+.dashboard-inline-pagination-page{min-width:42px;text-align:center;color:var(--navy);font-weight:800}
 .transactions-page .table-wrap{overflow:visible}
 .transactions-page .table-wrap table{min-width:0;width:100%;table-layout:fixed}
 .transactions-page .table-wrap th,.transactions-page .table-wrap td{padding:9px 10px;line-height:1.3;overflow-wrap:anywhere;vertical-align:middle}
 .transactions-page .table-wrap th:nth-child(1){width:10%}.transactions-page .table-wrap th:nth-child(2){width:9%}.transactions-page .table-wrap th:nth-child(3){width:36%}.transactions-page .table-wrap th:nth-child(4){width:13%}.transactions-page .table-wrap th:nth-child(5){width:13%}.transactions-page .table-wrap th:nth-child(6){width:10%}.transactions-page .table-wrap th:nth-child(7){width:9%}
 .transactions-page .table-description{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.transactions-page .page-title{align-items:center;margin-bottom:14px}
+.transactions-page .page-title h1{font-size:24px;line-height:1.15}
+.transactions-page .page-title p{margin-top:3px;font-size:13px}
+.transactions-page .page-title .btn{padding:9px 14px}
+.transactions-page .filters{display:grid;grid-template-columns:minmax(190px,1.15fr) minmax(170px,1fr) minmax(170px,1fr) auto;align-items:center;gap:9px;margin-bottom:12px}
+.transactions-page .filters>*{max-width:none;min-height:40px}
+.transactions-page .filters .btn{padding:8px 14px}
+.transactions-page .table-wrap{border-radius:11px}
+.transactions-page .table-wrap th,.transactions-page .table-wrap td{padding:8px 10px;line-height:1.2}
+.transactions-page .table-wrap tbody tr{transition:background .15s ease}
+.transactions-page .table-wrap tbody tr:hover{background:#fbfcfe}
+.transactions-page .table-wrap td strong{font-size:12px}
+.transactions-page .table-wrap td small{font-size:10px}
+.transactions-page .list-footer{margin-top:8px}
 .list-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;color:var(--muted);font-size:11px}
 .pagination{display:flex;flex-wrap:wrap;gap:4px;list-style:none;margin:0;padding:0}
 .pagination .page-item{margin:0}
@@ -206,8 +239,218 @@
 .table-wrap>nav{padding:10px 14px 13px}
 @media(max-width:760px){
     .compact-transaction-grid{grid-template-columns:1fr;padding:1px 12px 5px}
-    .compact-transaction-row{grid-template-columns:64px minmax(0,1fr) auto;gap:6px;padding:8px 0}
-    .compact-transaction-row time{font-size:9px}.compact-transaction-main strong{font-size:9px}.compact-transaction-main small{font-size:8px}.compact-transaction-main em{font-size:7px}.compact-transaction-row>b{font-size:9px}
+    .compact-transaction-row{grid-template-columns:64px minmax(0,1fr) auto;gap:6px;padding:8px 9px}.compact-transaction-row time{font-size:9px}.compact-transaction-type{font-size:6px;padding:2px 4px}.compact-transaction-main strong{font-size:9px}.compact-transaction-main small{font-size:8px}.compact-transaction-main em{font-size:7px}.compact-transaction-row>b{font-size:9px;padding:4px 5px}
+    .dashboard-inline-pagination{padding:7px 12px 10px;font-size:9px}.dashboard-inline-pagination button{padding:3px 6px}.dashboard-inline-pagination-page{min-width:34px}
     .transactions-page .table-wrap th,.transactions-page .table-wrap td{padding:8px 5px;font-size:10px}.transactions-page .table-wrap th{font-size:8px}.transactions-page .table-description{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
     .list-footer{align-items:flex-start;display:grid;gap:7px}.list-footer nav{width:100%}.list-footer .pagination{justify-content:flex-start}
+}
+
+/* Reports workspace: readable data density, balanced cards and quick navigation. */
+.reports-page .reports-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin:2px 0 14px}
+.reports-page .reports-kicker{display:block;margin-bottom:4px;color:#8895a8;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.reports-page .reports-hero h1{margin:0;color:var(--navy);font-size:28px;line-height:1.15}
+.reports-page .reports-hero p{margin:6px 0 0;color:var(--muted);font-size:14px}
+.reports-page .reports-hero-meta{display:flex;align-items:baseline;gap:5px;padding:10px 13px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--muted);font-size:11px;white-space:nowrap;box-shadow:0 4px 14px rgba(13,31,58,.04)}
+.reports-page .reports-hero-meta strong{color:var(--navy);font-size:16px}.reports-page .reports-hero-meta i{width:1px;height:15px;margin:0 7px;background:var(--line)}
+.reports-page .report-section-nav{display:flex;gap:6px;overflow-x:auto;margin:0 0 12px;padding:2px 1px 4px;scrollbar-width:thin}
+.reports-page .report-section-nav a{flex:0 0 auto;padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--navy2);font-size:11px;font-weight:700;text-decoration:none;transition:.15s ease}
+.reports-page .report-section-nav a:hover,.reports-page .report-section-nav a:focus-visible{border-color:var(--gold);background:#fff8e8;color:var(--navy)}
+.reports-page .report-filters{display:block!important;padding:13px 14px;margin-bottom:16px}
+.reports-page .report-filter-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.reports-page .report-filter-heading div{display:grid;gap:2px}.reports-page .report-filter-heading strong{color:var(--navy);font-size:13px}.reports-page .report-filter-heading small{color:var(--muted);font-size:11px}
+.reports-page .report-reset{color:var(--navy2);font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap}.reports-page .report-reset:hover{text-decoration:underline}
+.reports-page .report-filter-fields{display:grid;grid-template-columns:130px 130px 120px 155px minmax(180px,1fr) 150px auto;gap:8px;align-items:end}
+.reports-page .report-filter-fields>*{max-width:none!important}.reports-page .report-filter-fields label{gap:3px}.reports-page .report-filter-fields input,.reports-page .report-filter-fields select{min-height:38px;padding:8px 9px}
+.reports-page .report-filter-fields .check{min-height:38px;align-self:end;white-space:nowrap}.reports-page .report-filter-fields .btn{min-height:38px;padding:8px 13px}
+.reports-page>.grid.two{align-items:start}.reports-page .report-primary-card{align-self:start;min-width:0}
+.reports-page .report-primary-card .card-head{min-height:59px;align-items:center}.reports-page .report-primary-card .card-head>div{display:grid;gap:2px}.reports-page .report-primary-card .card-head small{color:#8793a5;font-size:10px}
+.reports-page .report-data-table{width:100%;min-width:0!important;table-layout:fixed}.reports-page .report-data-table th,.reports-page .report-data-table td{padding:11px 10px;line-height:1.35;vertical-align:top;overflow-wrap:anywhere}
+.reports-page .report-data-table th{color:#68778c;font-size:10px;letter-spacing:.04em}.reports-page .report-data-table td{font-size:13px}.reports-page .report-data-table td strong{display:block;color:var(--navy);font-weight:700}.reports-page .report-data-table td small{display:block;color:#8190a3;font-size:10px}
+.reports-page .report-data-table .table-description{display:-webkit-box;max-width:100%;overflow:hidden;text-overflow:ellipsis;-webkit-box-orient:vertical;-webkit-line-clamp:2}.reports-page .report-data-table .report-status{margin-top:3px;color:#a26b00;font-size:9px}
+.reports-page .report-transactions th:nth-child(1){width:15%}.reports-page .report-transactions th:nth-child(2){width:14%}.reports-page .report-transactions th:nth-child(3){width:29%}.reports-page .report-transactions th:nth-child(4){width:19%}.reports-page .report-transactions th:nth-child(5){width:23%}
+.reports-page .report-fuel th:nth-child(1){width:22%}.reports-page .report-fuel th:nth-child(2){width:38%}.reports-page .report-fuel th:nth-child(3){width:18%}.reports-page .report-fuel th:nth-child(4){width:22%}
+.reports-page .report-data-table td:last-child{white-space:nowrap}.reports-page .report-data-table .badge{display:inline-flex;align-items:center;min-height:22px;padding:3px 8px;font-size:10px}
+.reports-page .report-data-table .badge{white-space:nowrap;min-width:max-content}
+.reports-page .table-wrap>nav{display:flex;align-items:center;justify-content:center;min-height:53px;padding:10px 14px 12px;border-top:1px solid var(--line)}
+.reports-page .table-wrap>nav svg{width:15px;height:15px}.reports-page .table-wrap>nav a,.reports-page .table-wrap>nav span{font-size:11px}
+.reports-page .report-summary{margin-top:16px}.reports-page .report-tanker-summary,.reports-page .report-maintenance-history,.reports-page .efficiency-card{margin-top:16px}
+@media(max-width:1200px){.reports-page .report-filter-fields{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){
+    .reports-page .reports-hero{display:block;margin-bottom:10px}.reports-page .reports-hero h1{font-size:23px}.reports-page .reports-hero p{font-size:13px}.reports-page .reports-hero-meta{display:inline-flex;margin-top:9px;padding:8px 10px}
+    .reports-page .report-section-nav{margin-bottom:10px}.reports-page .report-section-nav a{padding:6px 9px;font-size:10px}
+    .reports-page .report-filters{padding:11px;margin-bottom:12px}.reports-page .report-filter-heading{align-items:flex-start;margin-bottom:10px}.reports-page .report-filter-heading small{font-size:10px}.reports-page .report-filter-fields{grid-template-columns:1fr;gap:8px}
+    .reports-page>.grid.two{grid-template-columns:1fr;gap:12px}.reports-page .report-primary-card .card-head{min-height:54px}.reports-page .report-primary-card .card-head h2{font-size:15px}
+    .reports-page .report-data-table,.reports-page .report-data-table tbody{display:block}.reports-page .report-data-table thead{display:none}.reports-page .report-data-table tbody{display:grid;gap:8px;padding:10px}
+    .reports-page .report-data-table tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;padding:11px;border:1px solid var(--line);border-radius:10px;background:#fff}.reports-page .report-data-table td{display:flex;min-width:0;padding:0;border:0;font-size:12px;white-space:normal!important}.reports-page .report-data-table td::before{content:attr(data-label);display:block;margin-bottom:2px;color:#7c899b;font-size:9px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.reports-page .report-data-table td:nth-child(3){grid-column:1/-1}.reports-page .report-fuel td:nth-child(3){grid-column:auto}.reports-page .report-data-table .empty{display:block!important;grid-column:1/-1;padding:16px 4px!important;border:0!important}.reports-page .report-data-table td small{font-size:10px}.reports-page .table-wrap>nav{min-height:0;flex-wrap:wrap;gap:7px;padding:10px 12px}.reports-page .table-wrap>nav>div{max-width:100%}
+}
+
+/* Sayısal rapor alanları ve mobil kayıt kartları. */
+.numeric{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+th.numeric{color:#596a80;text-align:right}
+.reports-page .report-data-table td.numeric,.reports-page .report-summary-table td.numeric,.reports-page .report-tanker-summary td.numeric,.reports-page .report-maintenance-history td.numeric,.reports-page .efficiency-card td.numeric{color:var(--navy);font-weight:750}
+.reports-page .report-data-table td.numeric,.transactions-page .table-wrap td.numeric{font-size:clamp(10px,1.15vw,13px);letter-spacing:-.015em}
+.reports-page .report-cell-content{display:grid;min-width:0;gap:2px}
+.reports-page .report-cell-content small{min-width:0}
+.transactions-page .table-wrap td.numeric{font-weight:750;font-variant-numeric:tabular-nums}
+
+@media(max-width:760px){
+    .reports-page .report-data-table tr{border-left:3px solid #d9e4f0;box-shadow:0 2px 8px rgba(13,31,58,.035)}
+    .reports-page .report-data-table tr:not(.deleted-row) .numeric{color:var(--navy)}
+    .reports-page .report-data-table td{display:grid!important;grid-template-columns:max-content minmax(0,1fr);align-items:start;gap:2px 8px;text-align:left!important}
+    .reports-page .report-data-table td::before{margin:0;line-height:1.25}
+    .reports-page .report-data-table td.numeric{justify-self:stretch;padding:4px 7px;border-radius:7px;background:#f7f9fc;text-align:right!important}
+    .reports-page .report-data-table td.numeric::before{justify-self:start;text-align:left}
+    .reports-page .report-data-table td>.report-cell-content{min-width:0}
+    .reports-page .report-data-table td>.report-cell-content .table-description{display:-webkit-box;max-width:100%;overflow:hidden;text-overflow:ellipsis;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+    .reports-page .report-summary-table td.numeric,.reports-page .report-tanker-summary td.numeric,.reports-page .report-maintenance-history td.numeric,.reports-page .efficiency-card td.numeric{font-weight:750;text-align:right}
+
+    .transactions-page .table-wrap table,.transactions-page .table-wrap tbody{display:block}
+    .transactions-page .table-wrap thead{display:none}
+    .transactions-page .table-wrap tbody{display:grid;gap:8px;padding:10px}
+    .transactions-page .table-wrap tbody tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;padding:11px;border:1px solid var(--line);border-left:3px solid #d94a4a;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(13,31,58,.035)}
+    .transactions-page .table-wrap tbody td{display:grid;grid-template-columns:max-content minmax(0,1fr);align-items:start;gap:2px 7px;min-width:0;padding:0;border:0;font-size:11px;line-height:1.3;overflow:visible;text-align:left}
+    .transactions-page .table-wrap tbody td::before{content:attr(data-label);display:block;color:#7c899b;font-size:8px;font-weight:800;letter-spacing:.04em;line-height:1.3;text-transform:uppercase}
+    .transactions-page .table-wrap tbody td:nth-child(3){grid-column:1/-1}
+    .transactions-page .table-wrap tbody td:nth-child(5){justify-self:end;padding:4px 7px;border-radius:7px;background:#fff4f3;text-align:right}
+    .transactions-page .table-wrap tbody td:nth-child(5)::before{color:#b04444}
+    .transactions-page .table-wrap tbody td:nth-child(6){justify-self:end}
+    .transactions-page .table-wrap tbody td:nth-child(7){grid-column:1/-1;justify-self:end;padding-top:6px;border-top:1px solid #eef1f5}
+    .transactions-page .transaction-cell-content{display:grid;min-width:0;gap:2px}
+    .transactions-page .transaction-cell-content .table-description{display:-webkit-box;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:normal;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+    .transactions-page .table-wrap tbody .empty{display:block!important;grid-column:1/-1;padding:18px 8px!important}
+}
+
+/* Rapor merkezi: daha kısa aralıklar, daha net bölümler ve dengeli veri yoğunluğu. */
+.reports-page .reports-hero{margin:0 0 10px}
+.reports-page .reports-kicker{margin-bottom:2px;font-size:10px}
+.reports-page .reports-hero h1{font-size:26px}
+.reports-page .reports-hero p{margin-top:4px;font-size:13px}
+.reports-page .reports-hero-meta{padding:8px 11px}
+.reports-page .report-section-nav{margin-bottom:9px;padding:1px 0 2px}
+.reports-page .report-section-nav a{padding:5px 9px;font-size:10px}
+.reports-page .report-filters{padding:10px 12px;margin-bottom:12px}
+.reports-page .report-filter-heading{margin-bottom:8px;padding-bottom:7px}
+.reports-page .report-filter-heading strong{font-size:12px}.reports-page .report-filter-heading small{font-size:10px}
+.reports-page .report-filter-fields{gap:7px}
+.reports-page .report-filter-fields input,.reports-page .report-filter-fields select{min-height:35px;padding:7px 8px}
+.reports-page .report-filter-fields .check{min-height:35px;font-size:11px}
+.reports-page .report-filter-fields .btn{min-height:35px;padding:7px 12px}
+.reports-page .report-export-bar{padding:8px 11px;margin-bottom:12px}
+.reports-page .report-export-groups .btn{min-height:28px;padding:4px 9px}
+.reports-page .report-primary-card .card-head{min-height:52px;padding:10px 14px}
+.reports-page .report-primary-card .card-head h2{font-size:14px}
+.reports-page .report-data-table th,.reports-page .report-data-table td{padding:8px 9px;line-height:1.25}
+.reports-page .report-data-table td:nth-child(1){white-space:nowrap;overflow-wrap:normal}
+.reports-page .report-data-table tbody tr,.reports-page .report-summary-table tbody tr,.reports-page .report-tanker-summary tbody tr,.reports-page .report-maintenance-history tbody tr,.reports-page .efficiency-card tbody tr{transition:background .15s ease}
+.reports-page .report-data-table tbody tr:hover,.reports-page .report-summary-table tbody tr:hover,.reports-page .report-tanker-summary tbody tr:hover,.reports-page .report-maintenance-history tbody tr:hover,.reports-page .efficiency-card tbody tr:hover{background:#fbfcfe}
+.reports-page #cash-report{border-top:3px solid #d94a4a}.reports-page #fuel-report{border-top:3px solid #e6a52a}
+.reports-page .report-summary .card{border-top:3px solid #e6a52a}.reports-page .report-tanker-summary{border-top:3px solid #168b5b}.reports-page .report-maintenance-history{border-top:3px solid #7b59b2}.reports-page .efficiency-card{border-top:3px solid #3d7dbc}
+
+@media(max-width:760px){
+    .reports-page .reports-hero{margin-bottom:8px}.reports-page .reports-hero h1{font-size:22px}.reports-page .reports-hero p{font-size:12px}.reports-page .reports-hero-meta{padding:7px 9px}
+    .reports-page .report-section-nav{margin-bottom:8px}.reports-page .report-filters{padding:9px 10px;margin-bottom:10px}.reports-page .report-filter-heading{margin-bottom:8px;padding-bottom:7px}.reports-page .report-filter-fields{gap:7px}
+    .reports-page .report-export-bar{padding:8px 10px;margin-bottom:10px}.reports-page .report-primary-card .card-head{min-height:50px;padding:9px 12px}
+    .reports-page .report-data-table td:nth-child(1){white-space:nowrap!important;overflow-wrap:normal}
+}
+
+/* Rapor ozeti: kompakt iki metrik, hizli ayirt edilebilir renkler. */
+.reports-page .reports-hero-meta{display:flex;align-items:stretch;gap:0;padding:4px 5px;border-radius:12px;background:linear-gradient(135deg,#fff 0%,#f8fafc 100%);box-shadow:0 5px 16px rgba(13,31,58,.06)}
+.reports-page .report-summary-metric{display:flex;align-items:center;gap:7px;min-width:105px;padding:3px 8px;border-radius:8px}
+.reports-page .report-summary-metric-cash{background:#f2fbf7}.reports-page .report-summary-metric-fuel{background:#fff8ea}
+.reports-page .report-summary-icon{display:grid;place-items:center;width:24px;height:24px;border-radius:8px;font-size:11px;font-weight:900;line-height:1}
+.reports-page .report-summary-metric-cash .report-summary-icon{background:#dff4e9;color:#168b5b}.reports-page .report-summary-metric-fuel .report-summary-icon{background:#ffedc5;color:#b4770a}
+.reports-page .report-summary-copy{display:grid;gap:1px;line-height:1.05}.reports-page .report-summary-copy strong{color:var(--navy);font-size:16px;font-variant-numeric:tabular-nums}.reports-page .report-summary-copy small{color:#78879a;font-size:10px;font-weight:650;white-space:nowrap}
+.reports-page .report-summary-divider{width:1px;height:27px;margin:auto 4px;background:#dbe2eb}
+@media(max-width:760px){
+    .reports-page .reports-hero-meta{display:flex;width:100%;justify-content:space-between;margin-top:8px;padding:4px 5px}
+    .reports-page .report-summary-metric{flex:1;min-width:0;padding:3px 7px}.reports-page .report-summary-divider{height:24px;margin:auto 3px}
+}
+
+/* Mobil rapor ozeti: uzun tablo basliklarini okunabilir bilgi kartlarina donusturur. */
+@media(max-width:760px){
+    .reports-page .report-summary-table,
+    .reports-page .report-tanker-table,
+    .reports-page .report-maintenance-table,
+    .reports-page .efficiency-table,
+    .reports-page .report-summary-table tbody,
+    .reports-page .report-tanker-table tbody,
+    .reports-page .report-maintenance-table tbody,
+    .reports-page .efficiency-table tbody{display:block;width:100%;min-width:0}
+    .reports-page .report-summary-table thead,
+    .reports-page .report-tanker-table thead,
+    .reports-page .report-maintenance-table thead,
+    .reports-page .efficiency-table thead{display:none}
+    .reports-page .report-summary-table tbody,
+    .reports-page .report-tanker-table tbody,
+    .reports-page .report-maintenance-table tbody,
+    .reports-page .efficiency-table tbody{padding:8px;display:grid;gap:6px}
+    .reports-page .report-summary-table tr,
+    .reports-page .report-tanker-table tr,
+    .reports-page .report-maintenance-table tr,
+    .reports-page .efficiency-table tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 10px;padding:8px 9px;border:1px solid var(--line);border-radius:8px;background:#fff}
+    .reports-page .report-summary-table tr{grid-template-columns:minmax(0,1fr) auto auto}
+    .reports-page .report-summary-table td,
+    .reports-page .report-tanker-table td,
+    .reports-page .report-maintenance-table td,
+    .reports-page .efficiency-table td{display:grid;grid-template-columns:max-content minmax(0,1fr);align-items:baseline;min-width:0;padding:0;border:0;font-size:11px;line-height:1.25;overflow:hidden}
+    .reports-page .report-summary-table td::before,
+    .reports-page .report-tanker-table td::before,
+    .reports-page .report-maintenance-table td::before,
+    .reports-page .efficiency-table td::before{content:attr(data-label);margin-right:6px;color:#7b899a;font-size:8px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;white-space:nowrap}
+    .reports-page .report-summary-table td.numeric,
+    .reports-page .report-tanker-table td.numeric,
+    .reports-page .report-maintenance-table td.numeric,
+    .reports-page .efficiency-table td.numeric{justify-self:stretch;padding:0;background:none;text-align:right!important}
+    .reports-page .report-summary-table td.numeric::before,
+    .reports-page .report-tanker-table td.numeric::before,
+    .reports-page .report-maintenance-table td.numeric::before,
+    .reports-page .efficiency-table td.numeric::before{justify-self:start;text-align:left}
+    .reports-page .report-maintenance-table td:nth-child(3){grid-column:1/-1}
+    .reports-page .report-summary-table .empty,
+    .reports-page .report-tanker-table .empty,
+    .reports-page .report-maintenance-table .empty,
+    .reports-page .efficiency-table .empty{display:block!important;grid-column:1/-1;padding:10px 4px!important;border:0!important;text-align:center}
+}
+
+/* Disa aktarma: baslik kalabaligini azaltan sade liste. */
+.reports-page .report-export-bar{gap:14px;padding:9px 11px}
+.reports-page .report-export-heading{display:grid!important;gap:1px!important;flex:0 0 auto}
+.reports-page .report-export-heading strong{font-size:12px}.reports-page .report-export-heading small{font-size:10px}
+.reports-page .report-export-groups{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex:1}
+.reports-page .report-export-item{display:flex;align-items:center;gap:7px;padding-left:8px;border-left:1px solid var(--line)}
+.reports-page .report-export-item:first-child{padding-left:0;border-left:0}
+.reports-page .report-export-label{display:inline-flex!important;align-items:center;gap:5px;margin:0!important;flex-basis:auto!important;color:#6f7e92!important;font-size:10px!important;font-weight:800!important;white-space:nowrap}
+.reports-page .report-export-label i{display:grid;place-items:center;width:18px;height:18px;border-radius:6px;background:#eef5ff;color:#3978bd;font-size:10px;font-style:normal;font-weight:900}
+.reports-page .report-export-item:nth-child(2) .report-export-label i{background:#fff3da;color:#b4770a}
+.reports-page .report-export-actions{display:flex!important;align-items:center;gap:5px;margin:0!important;flex-basis:auto!important}
+.reports-page .report-export-actions .btn{min-height:28px;padding:4px 9px;font-size:10px}
+@media(max-width:760px){
+    .reports-page .report-export-bar{display:grid;gap:6px;padding:8px 9px}
+    .reports-page .report-export-heading{display:flex!important;align-items:baseline;justify-content:space-between}
+    .reports-page .report-export-heading small{font-size:9px}
+    .reports-page .report-export-groups{display:grid;grid-template-columns:1fr;gap:5px;width:100%}
+    .reports-page .report-export-item{justify-content:space-between;width:100%;padding:5px 7px;border:1px solid #edf0f4;border-radius:7px;background:#fafbfd}
+    .reports-page .report-export-label{font-size:10px!important}
+    .reports-page .report-export-actions .btn{min-height:27px;padding:4px 8px;font-size:10px}
+}
+
+/* Mobil kasa/yakit listesi: tekrar eden kolon etiketleri yerine sade kayit satirlari. */
+@media(max-width:760px){
+    .reports-page .report-data-table tr{grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;padding:10px 11px;border-left:3px solid #d9e4f0}
+    .reports-page .report-data-table td{display:block!important;min-width:0;padding:0!important;border:0!important;font-size:12px;line-height:1.3;white-space:normal!important;overflow:hidden}
+    .reports-page .report-data-table td::before{display:none!important}
+    .reports-page .report-data-table td:nth-child(1){grid-column:1;grid-row:1;white-space:nowrap!important}
+    .reports-page .report-data-table td:nth-child(2){grid-column:2;grid-row:1;justify-self:end}
+    .reports-page .report-transactions td:nth-child(3){grid-column:1/-1;grid-row:2}
+    .reports-page .report-transactions td:nth-child(4){grid-column:1;grid-row:3;align-self:end;color:#596a80}
+    .reports-page .report-transactions td:nth-child(5){grid-column:2;grid-row:3;justify-self:end;align-self:end}
+    .reports-page .report-fuel td:nth-child(2){grid-column:1/-1;grid-row:2}
+    .reports-page .report-fuel td:nth-child(3){grid-column:1;grid-row:3;justify-self:start;align-self:end}
+    .reports-page .report-fuel td:nth-child(4){grid-column:2;grid-row:1;justify-self:end;align-self:start}
+    .reports-page .report-data-table td.numeric{display:inline-flex!important;align-items:center;justify-self:end;width:max-content;min-width:0;padding:5px 8px!important;border-radius:7px;background:#f7f9fc;text-align:right!important}
+    .reports-page .report-data-table td.numeric::before{display:none!important}
+    .reports-page .report-data-table td>.report-cell-content{display:grid;gap:2px;min-width:0}
+    .reports-page .report-data-table td>.report-cell-content strong{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .reports-page .report-data-table td>.report-cell-content .table-description{font-size:10px;line-height:1.25}
+    .reports-page .report-fuel td:nth-child(2)>strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 }

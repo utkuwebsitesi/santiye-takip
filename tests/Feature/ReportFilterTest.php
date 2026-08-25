@@ -32,4 +32,19 @@ class ReportFilterTest extends TestCase
             return $paginator->count() === 1 && $paginator->first()->is($wanted);
         });
     }
+
+    public function test_report_lists_show_ten_records_per_page(): void
+    {
+        $viewer = User::factory()->create();
+        foreach (range(1, 11) as $index) {
+            Transaction::create([
+                'type' => 'expense', 'category' => 'Test', 'description' => 'Kayıt '.$index,
+                'amount' => $index * 10, 'occurred_on' => '2026-08-01', 'created_by' => $viewer->id,
+            ]);
+        }
+
+        $this->actingAs($viewer)->get(route('reports.index'))
+            ->assertOk()
+            ->assertViewHas('transactions', fn ($paginator): bool => $paginator->perPage() === 10 && $paginator->total() === 11);
+    }
 }

@@ -7,7 +7,6 @@ use App\Models\AppSetting;
 use App\Models\AuditLog;
 use App\Models\FuelEntry;
 use App\Models\MaintenanceEntry;
-use App\Models\Permission;
 use App\Models\SystemNotification;
 use App\Models\Tanker;
 use App\Models\TankerMovement;
@@ -21,6 +20,7 @@ use App\Services\DocumentService;
 use App\Services\FuelService;
 use App\Services\MaintenanceReminderService;
 use App\Services\TankerStockService;
+use App\Services\UserPermissionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -37,22 +37,23 @@ class MobileApiController extends Controller
         return response()->json([
             'data' => [
                 'user' => $this->userPayload($request->user()),
-                'dashboard' => $this->dashboardPayload(),
-                'lookups' => $this->lookupPayload(),
-                'unread_notifications' => SystemNotification::query()
-                    ->where('user_id', $request->user()->id)->whereNull('read_at')->count(),
+                'dashboard' => $this->dashboardPayload($request->user()),
+                'lookups' => $this->lookupPayload($request->user()),
+                'unread_notifications' => $request->user()->hasPermission('notifications.view')
+                    ? SystemNotification::query()->where('user_id', $request->user()->id)->whereNull('read_at')->count()
+                    : 0,
             ],
         ]);
     }
 
-    public function dashboard(): JsonResponse
+    public function dashboard(Request $request): JsonResponse
     {
-        return response()->json(['data' => $this->dashboardPayload()]);
+        return response()->json(['data' => $this->dashboardPayload($request->user())]);
     }
 
-    public function lookups(): JsonResponse
+    public function lookups(Request $request): JsonResponse
     {
-        return response()->json(['data' => $this->lookupPayload()]);
+        return response()->json(['data' => $this->lookupPayload($request->user())]);
     }
 
     public function transactions(Request $request): JsonResponse
@@ -432,23 +433,30 @@ class MobileApiController extends Controller
 
     public function reports(Request $request, FuelService $fuelService): JsonResponse
     {
-        $fuel = FuelEntry::query()->with(['vehicle', 'tanker'])
-            ->when($request->filled('from'), fn ($query) => $query->whereDate('fuel_date', '>=', $request->date('from')))
-            ->when($request->filled('to'), fn ($query) => $query->whereDate('fuel_date', '<=', $request->date('to')))
-            ->when($request->filled('vehicle_id'), fn ($query) => $query->where('vehicle_id', $request->integer('vehicle_id')))
-            ->get();
-        $cash = Transaction::query()->where('affects_cash', true)
-            ->when($request->filled('from'), fn ($query) => $query->whereDate('occurred_on', '>=', $request->date('from')))
-            ->when($request->filled('to'), fn ($query) => $query->whereDate('occurred_on', '<=', $request->date('to')))
-            ->get();
+        $cash = collect();
+        if ($request->user()->hasPermission('transactions.view')) {
+            $cash = Transaction::query()->where('affects_cash', true)
+                ->when($request->filled('from'), fn ($query) => $query->whereDate('occurred_on', '>=', $request->date('from')))
+                ->when($request->filled('to'), fn ($query) => $query->whereDate('occurred_on', '<=', $request->date('to')))->get();
+        }
+        $fuel = collect();
+        if ($request->user()->hasPermission('fuel.view')) {
+            $fuel = FuelEntry::query()->with(['vehicle', 'tanker'])
+                ->when($request->filled('from'), fn ($query) => $query->whereDate('fuel_date', '>=', $request->date('from')))
+                ->when($request->filled('to'), fn ($query) => $query->whereDate('fuel_date', '<=', $request->date('to')))
+                ->when($request->filled('vehicle_id'), fn ($query) => $query->where('vehicle_id', $request->integer('vehicle_id')))->get();
+        }
 
-        return response()->json(['data' => [
-            'cash' => [
+        $data = [];
+        if ($request->user()->hasPermission('transactions.view')) {
+            $data['cash'] = [
                 'income' => (float) $cash->where('type', 'income')->sum('amount'),
                 'expense' => (float) $cash->where('type', 'expense')->sum('amount'),
                 'net' => (float) $cash->where('type', 'income')->sum('amount') - (float) $cash->where('type', 'expense')->sum('amount'),
-            ],
-            'fuel' => [
+            ];
+        }
+        if ($request->user()->hasPermission('fuel.view')) {
+            $data['fuel'] = [
                 'liters' => (float) $fuel->sum('liters'),
                 'amount' => (float) $fuel->sum('total_amount'),
                 'daily' => $fuel->groupBy(fn (FuelEntry $entry) => $entry->fuel_date->toDateString())->map(fn ($rows, $day) => [
@@ -457,13 +465,19 @@ class MobileApiController extends Controller
                 'efficiency' => $fuel->groupBy('vehicle_id')->map(function ($rows) use ($fuelService): array {
                     return ['vehicle' => $this->vehiclePayload($rows->first()->vehicle), ...$fuelService->consumptionRates($rows)];
                 })->values(),
-            ],
-        ]]);
+            ];
+        }
+
+        return response()->json(['data' => $data]);
     }
 
     public function notifications(Request $request): JsonResponse
     {
-        $items = SystemNotification::query()->where('user_id', $request->user()->id)->latest()->paginate($this->perPage($request));
+        $notificationQuery = SystemNotification::query()->where('user_id', $request->user()->id);
+        if (! $request->user()->hasPermission('maintenance.view')) {
+            $notificationQuery->whereNull('maintenance_entry_id');
+        }
+        $items = $notificationQuery->latest()->paginate($this->perPage($request));
 
         return response()->json($this->paginated($items, fn (SystemNotification $item) => [
             'id' => $item->id, 'title' => $item->title, 'message' => $item->message, 'link' => $item->link,
@@ -473,7 +487,11 @@ class MobileApiController extends Controller
 
     public function readAllNotifications(Request $request): JsonResponse
     {
-        SystemNotification::query()->where('user_id', $request->user()->id)->whereNull('read_at')->update(['read_at' => now()]);
+        $query = SystemNotification::query()->where('user_id', $request->user()->id)->whereNull('read_at');
+        if (! $request->user()->hasPermission('maintenance.view')) {
+            $query->whereNull('maintenance_entry_id');
+        }
+        $query->update(['read_at' => now()]);
 
         return response()->json(['message' => 'Tüm bildirimler okundu olarak işaretlendi.']);
     }
@@ -502,27 +520,31 @@ class MobileApiController extends Controller
         return response()->json(['data' => $query->get()->map(fn (User $user) => $this->userPayload($user))->values()]);
     }
 
-    public function storeUser(Request $request, AuditService $audit): JsonResponse
+    public function storeUser(Request $request, AuditService $audit, UserPermissionService $permissionService): JsonResponse
     {
         $data = $this->validateUser($request);
-        if ($data['role'] === 'super_admin' && ! $request->user()->isSuperAdmin()) {
-            abort(403, 'Sistem yöneticisi oluşturma yetkiniz yok.');
-        }
-        $user = User::create($data);
-        $audit->created($user, 'Mobil uygulamadan kullanıcı oluşturuldu.');
+        $permissionKeys = $permissionService->forCreate($request->user(), $data['role'], $data['permission_keys'] ?? [], (bool) ($data['permission_form'] ?? false));
+        $reason = trim((string) ($data['reason'] ?? 'Kullanıcı oluşturuldu.'));
+        unset($data['permission_keys'], $data['permission_form'], $data['reason']);
+        $data['permissions_configured'] = true;
+        $user = DB::transaction(function () use ($data, $permissionKeys, $permissionService, $audit, $reason): User {
+            $user = User::create($data);
+            $audit->created($user, $reason);
+            $permissionChange = $permissionService->sync($user, $permissionKeys);
+            $audit->event($user, 'permissions_updated', ['permissions' => $permissionChange['old']], ['permissions' => $permissionChange['new']], $reason);
+
+            return $user;
+        });
 
         return response()->json(['message' => 'Kullanıcı oluşturuldu.', 'data' => $this->userPayload($user)], 201);
     }
 
-    public function updateUser(Request $request, User $user, AuditService $audit): JsonResponse
+    public function updateUser(Request $request, User $user, AuditService $audit, UserPermissionService $permissionService): JsonResponse
     {
         if ($user->isSuperAdmin() && ! $request->user()->isSuperAdmin()) {
             abort(403, 'Sistem yöneticisi hesabı değiştirilemez.');
         }
         $data = $this->validateUser($request, $user);
-        if ($data['role'] === 'super_admin' && ! $request->user()->isSuperAdmin()) {
-            abort(403, 'Sistem yöneticisi yetkisi verilemez.');
-        }
         if ($request->user()->is($user) && ! $data['is_active']) {
             throw ValidationException::withMessages(['is_active' => 'Kendi hesabınızı pasifleştiremezsiniz.']);
         }
@@ -537,7 +559,31 @@ class MobileApiController extends Controller
         if (empty($data['password'])) {
             unset($data['password']);
         }
-        $audit->update($user, $data, 'Mobil uygulamadan kullanıcı bilgileri güncellendi.');
+        $oldRole = $user->role;
+        if ($request->user()->is($user) && ! $request->user()->isSuperAdmin() && $oldRole !== $data['role']) {
+            throw ValidationException::withMessages(['role' => 'Kendi rolünüzü değiştiremezsiniz.']);
+        }
+        $oldPermissions = $permissionService->storedKeys($user);
+        $permissionKeys = $permissionService->forUpdate($request->user(), $user, $data['role'], $data['permission_keys'] ?? [], (bool) ($data['permission_form'] ?? false));
+        $oldPermissionComparison = $oldPermissions; $newPermissionComparison = $permissionKeys ?? $oldPermissions;
+        sort($oldPermissionComparison); sort($newPermissionComparison);
+        $permissionChanged = $oldRole !== $data['role'] || $oldPermissionComparison !== $newPermissionComparison;
+        $reason = trim((string) ($data['reason'] ?? ''));
+        if ($permissionChanged && mb_strlen($reason) < 5) {
+            throw ValidationException::withMessages(['reason' => 'Rol veya yetki değişikliğinde en az 5 karakterlik gerekçe yazılmalıdır.']);
+        }
+        unset($data['permission_keys'], $data['permission_form'], $data['reason']);
+        if ($permissionKeys !== null) {
+            $data['permissions_configured'] = true;
+        }
+        DB::transaction(function () use ($user, $data, $audit, $permissionService, $permissionKeys, $permissionChanged, $oldPermissions, $reason): void {
+            $old = $user->getAttributes();
+            $audit->update($user, $data, $reason ?: 'Mobil uygulamadan kullanıcı bilgileri güncellendi.');
+            $permissionChange = $permissionKeys !== null ? $permissionService->sync($user, $permissionKeys) : ['old' => $oldPermissions, 'new' => $oldPermissions];
+            if ($permissionChanged) {
+                $audit->event($user, 'permissions_updated', ['permissions' => $permissionChange['old']], ['permissions' => $permissionChange['new']], $reason);
+            }
+        });
 
         return response()->json(['message' => 'Kullanıcı güncellendi.', 'data' => $this->userPayload($user->fresh())]);
     }
@@ -620,41 +666,46 @@ class MobileApiController extends Controller
     }
 
     /** @return array<string, mixed> */
-    private function dashboardPayload(): array
+    private function dashboardPayload(User $user): array
     {
+        $payload = ['metrics' => [], 'tankers' => [], 'recent_fuel' => [], 'maintenance_alerts' => []];
         $today = now(config('app.timezone'))->toDateString();
-        $income = (float) Transaction::query()->where('affects_cash', true)->where('type', 'income')->sum('amount');
-        $expense = (float) Transaction::query()->where('affects_cash', true)->where('type', 'expense')->sum('amount');
-        $tankers = Tanker::query()->where('is_active', true)->orderBy('name')->get();
-        $recentFuel = FuelEntry::query()->with(['vehicle', 'tanker'])->latest('fuel_date')->latest('id')->take(6)->get();
-
-        return [
-            'metrics' => [
-                'cash_balance' => $income - $expense,
-                'today_expense' => (float) Transaction::query()->where('affects_cash', true)->where('type', 'expense')->whereDate('occurred_on', $today)->sum('amount'),
-                'fuel_liters' => (float) FuelEntry::query()->sum('liters'),
-                'active_vehicle_count' => Vehicle::query()->where('is_active', true)->count(),
-            ],
-            'tankers' => $tankers->map(fn (Tanker $tanker) => $this->tankerPayload($tanker))->values(),
-            'recent_fuel' => $recentFuel->map(fn (FuelEntry $fuel) => $this->fuelPayload($fuel))->values(),
-            'maintenance_alerts' => app(MaintenanceReminderService::class)->due()->take(6)->map(fn (MaintenanceEntry $entry) => [
-                'id' => $entry->id,
-                'vehicle' => $this->vehiclePayload($entry->vehicle),
-                'maintenance_type' => $entry->maintenance_type,
+        if ($user->hasPermission('transactions.view')) {
+            $income = (float) Transaction::query()->where('affects_cash', true)->where('type', 'income')->sum('amount');
+            $expense = (float) Transaction::query()->where('affects_cash', true)->where('type', 'expense')->sum('amount');
+            $payload['metrics']['cash_balance'] = $income - $expense;
+            $payload['metrics']['today_expense'] = (float) Transaction::query()->where('affects_cash', true)->where('type', 'expense')->whereDate('occurred_on', $today)->sum('amount');
+        }
+        if ($user->hasPermission('fuel.view')) {
+            $recentFuel = FuelEntry::query()->with(['vehicle', 'tanker'])->latest('fuel_date')->latest('id')->take(6)->get();
+            $payload['metrics']['fuel_liters'] = (float) FuelEntry::query()->sum('liters');
+            $payload['recent_fuel'] = $recentFuel->map(fn (FuelEntry $fuel) => $this->fuelPayload($fuel))->values();
+        }
+        if ($user->hasPermission('vehicles.view')) {
+            $payload['metrics']['active_vehicle_count'] = Vehicle::query()->where('is_active', true)->count();
+        }
+        if ($user->hasPermission('tankers.view')) {
+            $payload['tankers'] = Tanker::query()->where('is_active', true)->orderBy('name')->get()->map(fn (Tanker $tanker) => $this->tankerPayload($tanker))->values();
+        }
+        if ($user->hasPermission('maintenance.view')) {
+            $payload['maintenance_alerts'] = app(MaintenanceReminderService::class)->due()->take(6)->map(fn (MaintenanceEntry $entry) => [
+                'id' => $entry->id, 'vehicle' => $this->vehiclePayload($entry->vehicle), 'maintenance_type' => $entry->maintenance_type,
                 'reasons' => $entry->reminder_reasons->values(),
-            ])->values(),
-        ];
+            ])->values();
+        }
+
+        return $payload;
     }
 
     /** @return array<string, mixed> */
-    private function lookupPayload(): array
+    private function lookupPayload(User $user): array
     {
         return [
-            'vehicles' => Vehicle::query()->where('is_active', true)->orderBy('name')->get()->map(fn (Vehicle $vehicle) => $this->vehiclePayload($vehicle))->values(),
-            'tankers' => Tanker::query()->where('is_active', true)->orderBy('name')->get()->map(fn (Tanker $tanker) => $this->tankerPayload($tanker))->values(),
-            'categories' => TransactionCategory::query()->where('is_active', true)->orderBy('type')->orderBy('sort_order')->get()->map(fn (TransactionCategory $category) => [
+            'vehicles' => $user->hasAnyPermission(['vehicles.view', 'fuel.create', 'maintenance.create']) ? Vehicle::query()->where('is_active', true)->orderBy('name')->get()->map(fn (Vehicle $vehicle) => $this->vehiclePayload($vehicle))->values() : collect(),
+            'tankers' => $user->hasAnyPermission(['tankers.view', 'fuel.create', 'tankers.purchase']) ? Tanker::query()->where('is_active', true)->orderBy('name')->get()->map(fn (Tanker $tanker) => $this->tankerPayload($tanker))->values() : collect(),
+            'categories' => $user->hasAnyPermission(['transactions.view', 'transactions.create']) ? TransactionCategory::query()->where('is_active', true)->orderBy('type')->orderBy('sort_order')->get()->map(fn (TransactionCategory $category) => [
                 'id' => $category->id, 'type' => $category->type, 'name' => $category->name,
-            ])->values(),
+            ])->values() : collect(),
         ];
     }
 
@@ -719,7 +770,7 @@ class MobileApiController extends Controller
     {
         return ['id' => $user->id, 'name' => $user->name, 'username' => $user->username, 'role' => $user->role, 'is_active' => $user->is_active,
             'is_admin' => $user->isAdmin(), 'is_super_admin' => $user->isSuperAdmin(),
-            'permissions' => $user->isSuperAdmin() ? array_keys(Permission::catalog()) : $user->permissions()->pluck('key')->values()->all()];
+            'permissions' => $user->effectivePermissionKeys()];
     }
 
     private function perPage(Request $request): int
@@ -835,7 +886,10 @@ class MobileApiController extends Controller
         $passwordRule = $user ? ['nullable', 'confirmed', Password::min(10)->letters()->mixedCase()->numbers()] : ['required', 'confirmed', Password::min(10)->letters()->mixedCase()->numbers()];
         return $request->validate([
             'name' => ['required', 'string', 'max:150'], 'username' => ['required', 'string', 'max:100', Rule::unique('users', 'username')->ignore($user)],
-            'role' => ['required', Rule::in(['personnel', 'admin', 'super_admin'])], 'is_active' => ['required', 'boolean'], 'password' => $passwordRule,
+            'role' => ['required', Rule::in($request->user()->isSuperAdmin() ? ['personnel', 'admin', 'super_admin'] : ['personnel', 'admin'])],
+            'is_active' => ['required', 'boolean'], 'permission_form' => ['nullable', 'boolean'],
+            'permission_keys' => ['nullable', 'array'], 'permission_keys.*' => ['string', Rule::in(array_keys(\App\Models\Permission::catalog()))],
+            'reason' => ['nullable', 'string', 'min:5', 'max:1000'], 'password' => $passwordRule,
         ]);
     }
 }

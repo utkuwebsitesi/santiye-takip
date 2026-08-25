@@ -35,6 +35,7 @@ class UserRequest extends FormRequest
             'permission_form' => ['nullable', 'boolean'],
             'permission_keys' => ['nullable', 'array'],
             'permission_keys.*' => ['string', Rule::in(array_keys(Permission::catalog()))],
+            'reason' => ['nullable', 'string', 'min:5', 'max:1000'],
             'password' => [...$password, 'confirmed', Password::min(10)->letters()->mixedCase()->numbers()],
         ];
     }

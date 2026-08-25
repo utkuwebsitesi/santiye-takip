@@ -35,6 +35,9 @@ class AppServiceProvider extends ServiceProvider
             $unreadNotificationCount = 0;
             $headerBriefing = ['weather' => [], 'rates' => [], 'weather_updated_at' => null, 'rates_updated_at' => null];
             try {
+                $user = auth()->user();
+                $canMaintenance = $user?->hasPermission('maintenance.view') ?? false;
+                $canNotifications = $user?->hasPermission('notifications.view') ?? false;
                 if (Schema::hasTable('app_settings')) {
                     $brand = array_merge($brand, AppSetting::pluck('value', 'key')->all());
                     if (($brand['software_name'] ?? null) === 'Şantiye360') {
@@ -63,7 +66,6 @@ class AppServiceProvider extends ServiceProvider
                         'audit' => 'audit.view', 'users' => 'users.manage',
                         'system_management' => 'system.manage',
                     ];
-                    $user = auth()->user();
                     $navigation = NavigationItem::where('is_enabled', true)->orderBy('sort_order')->get()
                         ->filter(fn ($item) => $user->hasPermission($navigationPermissions[$item->key] ?? 'dashboard.view'))
                         ->filter(fn ($item) => isset($routes[$item->key]))
@@ -75,10 +77,10 @@ class AppServiceProvider extends ServiceProvider
                             return $item;
                         })->values();
                 }
-                if (auth()->check() && Schema::hasTable('maintenance_entries') && Schema::hasColumn('fuel_entries', 'operating_hours')) {
+                if (auth()->check() && $canMaintenance && $canNotifications && Schema::hasTable('maintenance_entries') && Schema::hasColumn('fuel_entries', 'operating_hours')) {
                     $maintenanceAlerts = app(MaintenanceReminderService::class)->due();
                 }
-                if (auth()->check() && Schema::hasTable('system_notifications')) {
+                if (auth()->check() && $canNotifications && Schema::hasTable('system_notifications')) {
                     foreach ($maintenanceAlerts as $alert) {
                         $notification = SystemNotification::firstOrCreate(
                             [
@@ -95,8 +97,12 @@ class AppServiceProvider extends ServiceProvider
                             $newNotifications->push($notification);
                         }
                     }
-                    $headerNotifications = SystemNotification::where('user_id', auth()->id())->latest()->limit(8)->get();
-                    $unreadNotificationCount = SystemNotification::where('user_id', auth()->id())->whereNull('read_at')->count();
+                    $notificationQuery = SystemNotification::where('user_id', auth()->id());
+                    if (! $canMaintenance) {
+                        $notificationQuery->whereNull('maintenance_entry_id');
+                    }
+                    $headerNotifications = (clone $notificationQuery)->latest()->limit(8)->get();
+                    $unreadNotificationCount = (clone $notificationQuery)->whereNull('read_at')->count();
                 }
                 if (auth()->check()) {
                     $headerBriefing = app(HeaderBriefingService::class)->get();

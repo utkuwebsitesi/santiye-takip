@@ -48,6 +48,7 @@ class AuditLog extends Model
             'password_changed' => 'Parola değiştirildi',
             'password_reset' => 'Parola sıfırlandı',
             'user_updated' => 'Kullanıcı güncellendi',
+            'permissions_updated' => 'Yetkiler güncellendi',
             'user_activated' => 'Kullanıcı etkinleştirildi',
             'user_deactivated' => 'Kullanıcı pasifleştirildi',
             default => 'Sistem işlemi',
@@ -136,6 +137,7 @@ class AuditLog extends Model
             'name' => 'Ad',
             'username' => 'Kullanıcı adı',
             'role' => 'Yetki',
+            'permissions' => 'Yetki listesi',
             'is_active' => 'Durum',
             'plate' => 'Plaka',
             'code' => 'Makine kodu',
@@ -160,6 +162,15 @@ class AuditLog extends Model
     {
         if ($value === null || $value === '') {
             return '—';
+        }
+
+        if ($field === 'permissions') {
+            $labels = Permission::catalog();
+
+            return collect((array) $value)
+                ->map(fn (mixed $permission): string => $labels[(string) $permission] ?? (string) $permission)
+                ->filter()
+                ->join(', ') ?: '—';
         }
 
         if (in_array($field, ['is_active', 'affects_cash', 'tracks_meters', 'is_enabled'], true)) {

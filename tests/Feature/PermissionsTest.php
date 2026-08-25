@@ -7,6 +7,7 @@ use App\Models\Permission;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Models\Tanker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -108,6 +109,7 @@ class PermissionsTest extends TestCase
             'is_active' => 1,
             'permission_form' => 1,
             'permission_keys' => ['dashboard.view', 'vehicles.manage'],
+            'reason' => 'Araç işlemlerini yürütmesi için yetki verildi.',
         ])->assertRedirect(route('users.index'));
 
         $personnel->refresh();
@@ -137,7 +139,42 @@ class PermissionsTest extends TestCase
             ->assertOk()
             ->assertSee('Kullanıcı yetkileri')
             ->assertSee('Tanker ekleme / düzenleme / silme')
+            ->assertSee('Tanker ekleyebilme')
+            ->assertSee('Tanker silebilme')
             ->assertSee('Araç / makine ekleme / düzenleme / silme')
+            ->assertSee('Araç / makine düzenleyebilme')
+            ->assertSee('Kasa hareket raporu PDF alabilme')
             ->assertSee('permission_keys[]', false);
+    }
+
+    public function test_vehicle_permissions_can_be_granted_individually(): void
+    {
+        $personnel = User::factory()->create(['role' => 'personnel']);
+        $personnel->permissions_configured = true;
+        $personnel->save();
+        $personnel->permissions()->sync(Permission::whereIn('key', ['dashboard.view', 'vehicles.view', 'vehicles.create'])->pluck('id'));
+        $vehicle = Vehicle::create(['type' => 'vehicle', 'name' => 'Test Aracı', 'plate' => '06 TEST 01', 'is_active' => true, 'tracks_meters' => true]);
+
+        $this->actingAs($personnel)->get(route('araclar.create'))->assertOk();
+        $this->actingAs($personnel)->get(route('araclar.edit', $vehicle))->assertForbidden();
+        $this->actingAs($personnel)->delete(route('araclar.destroy', $vehicle))->assertForbidden();
+
+        $this->assertTrue($personnel->hasPermission('vehicles.create'));
+        $this->assertFalse($personnel->hasPermission('vehicles.update'));
+    }
+
+    public function test_tanker_permissions_can_be_granted_individually(): void
+    {
+        $personnel = User::factory()->create(['role' => 'personnel']);
+        $personnel->permissions_configured = true;
+        $personnel->save();
+        $personnel->permissions()->sync(Permission::whereIn('key', ['dashboard.view', 'tankers.create'])->pluck('id'));
+
+        $this->actingAs($personnel)->get(route('tankers.manage'))->assertOk();
+        $this->actingAs($personnel)->post(route('tankers.store'), ['name' => 'Yetkili Tanker'])
+            ->assertRedirect(route('tankers.manage'));
+        $tanker = Tanker::where('name', 'Yetkili Tanker')->firstOrFail();
+        $this->actingAs($personnel)->patch(route('tankers.update', $tanker), ['name' => 'Yeni Ad', 'is_active' => 1])
+            ->assertForbidden();
     }
 }

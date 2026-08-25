@@ -9,7 +9,9 @@ class VehicleRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->hasPermission('vehicles.manage') === true;
+        $permission = $this->route('vehicle') ? 'vehicles.update' : 'vehicles.create';
+
+        return $this->user()?->hasPermission($permission) === true;
     }
 
     protected function prepareForValidation(): void

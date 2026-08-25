@@ -33,12 +33,12 @@ Route::prefix('v1/mobile')->group(function (): void {
 
         Route::patch('/transactions/{transaction}', [MobileApiController::class, 'updateTransaction'])->middleware('mobile.permission:transactions.manage');
         Route::delete('/transactions/{transaction}', [MobileApiController::class, 'destroyTransaction'])->middleware('mobile.permission:transactions.manage');
-        Route::post('/tankers', [MobileApiController::class, 'storeTanker'])->middleware('mobile.permission:tankers.manage');
-        Route::patch('/tankers/{tanker}', [MobileApiController::class, 'updateTanker'])->middleware('mobile.permission:tankers.manage');
-        Route::delete('/tankers/{tanker}', [MobileApiController::class, 'destroyTanker'])->middleware('mobile.permission:tankers.manage');
-        Route::post('/vehicles', [MobileApiController::class, 'storeVehicle'])->middleware('mobile.permission:vehicles.manage');
-        Route::patch('/vehicles/{vehicle}', [MobileApiController::class, 'updateVehicle'])->middleware('mobile.permission:vehicles.manage');
-        Route::delete('/vehicles/{vehicle}', [MobileApiController::class, 'destroyVehicle'])->middleware('mobile.permission:vehicles.manage');
+        Route::post('/tankers', [MobileApiController::class, 'storeTanker'])->middleware('mobile.permission:tankers.create');
+        Route::patch('/tankers/{tanker}', [MobileApiController::class, 'updateTanker'])->middleware('mobile.permission:tankers.update');
+        Route::delete('/tankers/{tanker}', [MobileApiController::class, 'destroyTanker'])->middleware('mobile.permission:tankers.delete');
+        Route::post('/vehicles', [MobileApiController::class, 'storeVehicle'])->middleware('mobile.permission:vehicles.create');
+        Route::patch('/vehicles/{vehicle}', [MobileApiController::class, 'updateVehicle'])->middleware('mobile.permission:vehicles.update');
+        Route::delete('/vehicles/{vehicle}', [MobileApiController::class, 'destroyVehicle'])->middleware('mobile.permission:vehicles.delete');
         Route::patch('/fuel/{fuelEntry}', [MobileApiController::class, 'updateFuel'])->middleware('mobile.permission:fuel.manage');
         Route::delete('/fuel/{fuelEntry}', [MobileApiController::class, 'destroyFuel'])->middleware('mobile.permission:fuel.manage');
         Route::patch('/maintenance/{maintenance}', [MobileApiController::class, 'updateMaintenance'])->middleware('mobile.permission:maintenance.manage');

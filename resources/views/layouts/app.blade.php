@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', $brand['software_name'])</title>
     <link rel="icon" type="image/svg+xml" href="{{ asset('assets/brand-mark.svg') }}?v=20260731-1">
-    <link rel="stylesheet" href="{{ asset('assets/app.css') }}?v=20260824-compact-1">
+    <link rel="stylesheet" href="{{ asset('assets/app.css') }}?v=20260824-reports-8">
 </head>
 <body>
 <div class="shell">
@@ -85,6 +85,7 @@
                     </div>
                 </details>
                 @endif
+                @if(auth()->user()?->hasPermission('notifications.view'))
                 <details class="notification-menu">
                     <summary aria-label="Bildirimleri aç">
                         <span class="bell">🔔</span>
@@ -103,6 +104,7 @@
                         @endforelse
                     </div>
                 </details>
+                @endif
                 <span class="secure">● Güvenli Oturum</span>
             </div>
         </header>
@@ -113,7 +115,7 @@
         </section>
     </main>
 </div>
-@if(($newNotifications ?? collect())->isNotEmpty())
+@if(auth()->user()?->hasPermission('notifications.view') && ($newNotifications ?? collect())->isNotEmpty())
 <aside class="maintenance-toast" role="alert" aria-live="polite" data-auto-dismiss="8000">
     <button type="button" class="maintenance-toast-close" aria-label="Bakım uyarısını kapat">×</button>
     <strong>⚠ Bakım zamanı geldi</strong>

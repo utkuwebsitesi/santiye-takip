@@ -41,11 +41,9 @@ class User extends Authenticatable
             return true;
         }
 
-        if ($this->permissions_configured !== true) {
-            return in_array($permission, Permission::defaultKeysForRole($this->role), true);
-        }
-
-        $keys = $this->permissions()->pluck('key')->all();
+        $keys = $this->permissions_configured === true
+            ? $this->permissions()->pluck('key')->all()
+            : Permission::defaultKeysForRole($this->role);
         if (in_array($permission, $keys, true)) {
             return true;
         }
@@ -53,13 +51,41 @@ class User extends Authenticatable
         $impliedBy = [
             'transactions.view' => ['transactions.manage'],
             'fuel.view' => ['fuel.manage'],
-            'tankers.view' => ['tankers.manage'],
             'maintenance.view' => ['maintenance.manage'],
-            'vehicles.view' => ['vehicles.manage'],
+            'vehicles.view' => ['vehicles.manage', 'vehicles.create', 'vehicles.update', 'vehicles.delete'],
+            'vehicles.create' => ['vehicles.manage'],
+            'vehicles.update' => ['vehicles.manage'],
+            'vehicles.delete' => ['vehicles.manage'],
+            'tankers.view' => ['tankers.manage', 'tankers.create', 'tankers.update', 'tankers.delete'],
+            'tankers.create' => ['tankers.manage'],
+            'tankers.update' => ['tankers.manage'],
+            'tankers.delete' => ['tankers.manage'],
+            'reports.view' => ['reports.cash.pdf', 'reports.cash.excel', 'reports.fuel.pdf', 'reports.fuel.excel'],
             'notifications.view' => ['system.manage'],
             'audit.view' => ['users.manage'],
         ];
 
         return collect($impliedBy[$permission] ?? [])->intersect($keys)->isNotEmpty();
+    }
+
+    /** @param array<int, string> $permissions */
+    public function hasAnyPermission(array $permissions): bool
+    {
+        foreach ($permissions as $permission) {
+            if ($this->hasPermission($permission)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** @return array<int, string> */
+    public function effectivePermissionKeys(): array
+    {
+        return array_values(array_filter(
+            array_keys(Permission::catalog()),
+            fn (string $permission): bool => $this->hasPermission($permission)
+        ));
     }
 }

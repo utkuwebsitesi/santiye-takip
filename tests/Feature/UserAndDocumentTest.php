@@ -21,6 +21,7 @@ class UserAndDocumentTest extends TestCase
         $this->actingAs($admin)->post(route('users.store'), [
             'name' => 'Personel Bir', 'username' => ' personel.1 ', 'role' => 'personnel',
             'is_active' => 1, 'password' => 'Strong-Pass-2026!', 'password_confirmation' => 'Strong-Pass-2026!',
+            'permission_form' => 1, 'permission_keys' => ['dashboard.view'],
         ])->assertRedirect(route('users.index'));
         $personnel = User::where('username', 'personel.1')->firstOrFail();
         $this->assertTrue(Hash::check('Strong-Pass-2026!', $personnel->password));

@@ -12,6 +12,7 @@ use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ReportExportController;
 use App\Http\Controllers\SystemManagementController;
 use App\Http\Controllers\TankerController;
 use App\Http\Controllers\TransactionController;
@@ -56,6 +57,10 @@ Route::middleware(['auth', 'active', 'session.timeout'])->group(function (): voi
     Route::get('/belgeler/kasa/{transaction}', [DocumentController::class, 'transaction'])->middleware('permission:transactions.view')->name('documents.transaction');
     Route::get('/belgeler/yakit/{fuelEntry}', [DocumentController::class, 'fuel'])->middleware('permission:fuel.view')->name('documents.fuel');
     Route::get('/belgeler/bakim/{maintenance}', [DocumentController::class, 'maintenance'])->middleware('permission:maintenance.view')->name('documents.maintenance');
+    Route::get('/raporlar/kasa/pdf', [ReportExportController::class, 'cashPdf'])->middleware('permission:reports.cash.pdf')->name('reports.cash.pdf');
+    Route::get('/raporlar/kasa/excel', [ReportExportController::class, 'cashExcel'])->middleware('permission:reports.cash.excel')->name('reports.cash.excel');
+    Route::get('/raporlar/yakit/pdf', [ReportExportController::class, 'fuelPdf'])->middleware('permission:reports.fuel.pdf')->name('reports.fuel.pdf');
+    Route::get('/raporlar/yakit/excel', [ReportExportController::class, 'fuelExcel'])->middleware('permission:reports.fuel.excel')->name('reports.fuel.excel');
     Route::get('/raporlar', ReportController::class)->middleware('permission:reports.view')->name('reports.index');
     Route::get('/bildirimler', [NotificationController::class, 'index'])->middleware('permission:notifications.view')->name('notifications.index');
     Route::get('/bildirimler/{notification}/ac', [NotificationController::class, 'open'])->middleware('permission:notifications.view')->name('notifications.open');
@@ -63,11 +68,11 @@ Route::middleware(['auth', 'active', 'session.timeout'])->group(function (): voi
     Route::get('/parola', [PasswordController::class, 'edit'])->name('password.edit');
     Route::put('/parola', [PasswordController::class, 'update'])->name('password.update');
 
-    Route::get('/tankerler/yonetim', [TankerController::class, 'manage'])->middleware('permission:tankers.manage')->name('tankers.manage');
-    Route::post('/tankerler', [TankerController::class, 'storeTanker'])->middleware('permission:tankers.manage')->name('tankers.store');
-    Route::patch('/tankerler/{tanker}', [TankerController::class, 'updateTanker'])->middleware('permission:tankers.manage')->name('tankers.update');
-    Route::delete('/tankerler/{tanker}/arsivi-temizle', [TankerController::class, 'purgeArchivedAndDestroyTanker'])->middleware('permission:tankers.manage')->name('tankers.purge');
-    Route::delete('/tankerler/{tanker}', [TankerController::class, 'destroyTanker'])->middleware('permission:tankers.manage')->name('tankers.destroy');
+    Route::get('/tankerler/yonetim', [TankerController::class, 'manage'])->middleware('permission:tankers.manage|tankers.create|tankers.update|tankers.delete')->name('tankers.manage');
+    Route::post('/tankerler', [TankerController::class, 'storeTanker'])->middleware('permission:tankers.create')->name('tankers.store');
+    Route::patch('/tankerler/{tanker}', [TankerController::class, 'updateTanker'])->middleware('permission:tankers.update')->name('tankers.update');
+    Route::delete('/tankerler/{tanker}/arsivi-temizle', [TankerController::class, 'purgeArchivedAndDestroyTanker'])->middleware('permission:tankers.delete')->name('tankers.purge');
+    Route::delete('/tankerler/{tanker}', [TankerController::class, 'destroyTanker'])->middleware('permission:tankers.delete')->name('tankers.destroy');
     Route::get('/kasa-hareketleri/{transaction}/duzenle', [TransactionController::class, 'edit'])->middleware('permission:transactions.manage')->name('transactions.edit');
     Route::patch('/kasa-hareketleri/{transaction}', [TransactionController::class, 'update'])->middleware('permission:transactions.manage')->name('transactions.update');
     Route::delete('/kasa-hareketleri/{transaction}', [TransactionController::class, 'destroy'])->middleware('permission:transactions.manage')->name('transactions.destroy');
@@ -78,11 +83,11 @@ Route::middleware(['auth', 'active', 'session.timeout'])->group(function (): voi
     Route::patch('/bakim/{maintenance}', [MaintenanceController::class, 'update'])->middleware('permission:maintenance.manage')->name('maintenance.update');
     Route::delete('/bakim/{maintenance}', [MaintenanceController::class, 'destroy'])->middleware('permission:maintenance.manage')->name('maintenance.destroy');
     Route::get('/araclar', [VehicleController::class, 'index'])->middleware('permission:vehicles.view')->name('araclar.index');
-    Route::get('/araclar/yeni', [VehicleController::class, 'create'])->middleware('permission:vehicles.manage')->name('araclar.create');
-    Route::post('/araclar', [VehicleController::class, 'store'])->middleware('permission:vehicles.manage')->name('araclar.store');
-    Route::get('/araclar/{vehicle}/duzenle', [VehicleController::class, 'edit'])->middleware('permission:vehicles.manage')->name('araclar.edit');
-    Route::patch('/araclar/{vehicle}', [VehicleController::class, 'update'])->middleware('permission:vehicles.manage')->name('araclar.update');
-    Route::delete('/araclar/{vehicle}', [VehicleController::class, 'destroy'])->middleware('permission:vehicles.manage')->name('araclar.destroy');
+    Route::get('/araclar/yeni', [VehicleController::class, 'create'])->middleware('permission:vehicles.create')->name('araclar.create');
+    Route::post('/araclar', [VehicleController::class, 'store'])->middleware('permission:vehicles.create')->name('araclar.store');
+    Route::get('/araclar/{vehicle}/duzenle', [VehicleController::class, 'edit'])->middleware('permission:vehicles.update')->name('araclar.edit');
+    Route::patch('/araclar/{vehicle}', [VehicleController::class, 'update'])->middleware('permission:vehicles.update')->name('araclar.update');
+    Route::delete('/araclar/{vehicle}', [VehicleController::class, 'destroy'])->middleware('permission:vehicles.delete')->name('araclar.destroy');
     Route::get('/islem-gecmisi', AuditLogController::class)->middleware('permission:audit.view')->name('audit.index');
     Route::resource('/kullanicilar', UserController::class)->except(['show', 'destroy'])->parameters(['kullanicilar' => 'user'])->names('users')->middleware(['admin', 'permission:users.manage']);
 

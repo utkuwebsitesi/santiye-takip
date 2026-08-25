@@ -4,7 +4,7 @@
 @section('content')
 <div class="page-title"><div><h1>Tanker Yönetimi</h1><p>Aktif tankerler stok, yakıt ikmali ve raporlarda otomatik görünür.</p></div><a class="btn secondary" href="{{ route('tankers.index') }}">Stoklara Dön</a></div>
 
-<section class="card tanker-manager-create"><div class="card-head"><h2>Yeni Tanker Ekle</h2></div><form class="form-grid" method="post" action="{{ route('tankers.store') }}">@csrf<label>Tankerin adı<input name="name" value="{{ old('name') }}" maxlength="80" placeholder="Örn. Şantiye Tankeri" required><small>Yeni tanker stok sıfırdan başlar. Yakıt alımı kaydedildiğinde kasa ve stok takibine katılır.</small></label><div class="form-actions"><button class="btn primary">+ Tanker Ekle</button></div></form></section>
+@if(auth()->user()->hasPermission('tankers.create'))<section class="card tanker-manager-create"><div class="card-head"><h2>Yeni Tanker Ekle</h2></div><form class="form-grid" method="post" action="{{ route('tankers.store') }}">@csrf<label>Tankerin adı<input name="name" value="{{ old('name') }}" maxlength="80" placeholder="Örn. Şantiye Tankeri" required><small>Yeni tanker stok sıfırdan başlar. Yakıt alımı kaydedildiğinde kasa ve stok takibine katılır.</small></label><div class="form-actions"><button class="btn primary">+ Tanker Ekle</button></div></form></section>@endif
 
 <section class="card table-wrap tanker-manager-list">
     <div class="card-head"><div><h2>Mevcut Tankerler</h2><small>Engel olan aktif veya arşiv kayıtları burada ayrı ayrı gösterilir.</small></div></div>
@@ -18,21 +18,23 @@
                 $hasStock = (float) $tanker->stock_liters > 0;
             @endphp
             <tr>
-                <td><form id="tanker-{{ $tanker->id }}" method="post" action="{{ route('tankers.update', $tanker) }}">@csrf @method('PATCH')<input name="name" value="{{ $tanker->name }}" maxlength="80" required></form></td>
+                <td>@if(auth()->user()->hasPermission('tankers.update'))<form id="tanker-{{ $tanker->id }}" method="post" action="{{ route('tankers.update', $tanker) }}">@csrf @method('PATCH')<input name="name" value="{{ $tanker->name }}" maxlength="80" required></form>@else<strong>{{ $tanker->name }}</strong>@endif</td>
                 <td>{{ number_format($tanker->stock_liters, 3, ',', '.') }} L</td>
                 <td>{{ number_format($tanker->average_unit_cost, 4, ',', '.') }} ₺/L</td>
-                <td><select name="is_active" form="tanker-{{ $tanker->id }}"><option value="1" @selected($tanker->is_active)>Aktif</option><option value="0" @selected(! $tanker->is_active)>Pasif</option></select></td>
+                <td>@if(auth()->user()->hasPermission('tankers.update'))<select name="is_active" form="tanker-{{ $tanker->id }}"><option value="1" @selected($tanker->is_active)>Aktif</option><option value="0" @selected(! $tanker->is_active)>Pasif</option></select>@else{{ $tanker->is_active ? 'Aktif' : 'Pasif' }}@endif</td>
                 <td><div class="tanker-actions">
-                    <button class="btn secondary" form="tanker-{{ $tanker->id }}">Kaydet</button>
+                    @if(auth()->user()->hasPermission('tankers.update'))<button class="btn secondary" form="tanker-{{ $tanker->id }}">Kaydet</button>@endif
                     @if($hasStock)
                         <span class="tanker-history-note is-blocking">Stok var: {{ number_format($tanker->stock_liters, 3, ',', '.') }} L</span>
                     @elseif($activeHistoryCount > 0)
                         <span class="tanker-history-note is-blocking">Engel: {{ $tanker->active_movement_count }} hareket · {{ $tanker->active_fuel_entry_count }} yakıt kaydı</span>
-                    @elseif($archivedHistoryCount > 0)
+                    @elseif($archivedHistoryCount > 0 && auth()->user()->hasPermission('tankers.delete'))
                         <span class="tanker-history-note is-archive">Arşivde: {{ $tanker->archived_movement_count }} hareket · {{ $tanker->archived_fuel_entry_count }} yakıt kaydı</span>
                         <form method="post" action="{{ route('tankers.purge', $tanker) }}" data-confirm="{{ $tanker->name }} tankerinin {{ $archivedHistoryCount }} arşiv kaydı kalıcı olarak silinecek. Devam etmek istiyor musunuz?">@csrf @method('DELETE')<button class="btn danger">Arşivi temizle ve sil</button></form>
-                    @else
+                    @elseif(auth()->user()->hasPermission('tankers.delete'))
                         <form method="post" action="{{ route('tankers.destroy', $tanker) }}" data-confirm="{{ $tanker->name }} tankerini silmek istediğinize emin misiniz? Bu işlem geri alınamaz.">@csrf @method('DELETE')<button class="btn danger">Sil</button></form>
+                    @else
+                        <span class="tanker-history-note">İşlem yetkisi verilmedi</span>
                     @endif
                 </div></td>
             </tr>

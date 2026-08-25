@@ -8,6 +8,7 @@ use App\Models\TankerMovement;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Models\Permission;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
@@ -20,6 +21,8 @@ class DashboardAndFuelTest extends TestCase
     {
         Carbon::setTestNow('2026-07-15 12:00:00');
         $user = User::factory()->create();
+        $user->forceFill(['permissions_configured' => true])->save();
+        $user->permissions()->sync(Permission::whereIn('key', array_merge(Permission::defaultKeysForRole('personnel'), ['vehicles.view']))->pluck('id'));
         $make = fn ($type, $amount, $date) => Transaction::create(['type' => $type, 'category' => 'Test', 'description' => 'Test', 'amount' => $amount, 'occurred_on' => $date, 'created_by' => $user->id]);
         $make('income', 1000, '2026-06-01');
         $make('expense', 200, '2026-06-02');
@@ -183,6 +186,8 @@ class DashboardAndFuelTest extends TestCase
     {
         Carbon::setTestNow('2026-07-15 12:00:00');
         $user = User::factory()->create();
+        $user->forceFill(['permissions_configured' => true])->save();
+        $user->permissions()->sync(Permission::whereIn('key', array_merge(Permission::defaultKeysForRole('personnel'), ['vehicles.view']))->pluck('id'));
         $tanker = Tanker::firstOrFail();
         $vehicle = Vehicle::create([
             'type' => 'vehicle', 'name' => 'Servis Aracı', 'plate' => '06 STK 01',
@@ -251,6 +256,8 @@ class DashboardAndFuelTest extends TestCase
     {
         Carbon::setTestNow('2026-07-15 12:00:00');
         $user = User::factory()->create();
+        $user->forceFill(['permissions_configured' => true])->save();
+        $user->permissions()->sync(Permission::whereIn('key', array_merge(Permission::defaultKeysForRole('personnel'), ['vehicles.view']))->pluck('id'));
         Transaction::create([
             'type' => 'income', 'category' => 'Tahsilat', 'description' => 'Dün tahsilat',
             'amount' => 1000, 'occurred_on' => '2026-07-14', 'created_by' => $user->id,
@@ -295,6 +302,9 @@ class DashboardAndFuelTest extends TestCase
         $this->actingAs($user)->get(route('dashboard'))
             ->assertOk()
             ->assertSee('19.08.2026')
+            ->assertSee('data-inline-pagination', false)
+            ->assertSee('data-page-size="10"', false)
+            ->assertSee('Sonraki', false)
             ->assertViewHas('recentTransactions', fn ($items): bool => $items->count() === 25);
     }
 

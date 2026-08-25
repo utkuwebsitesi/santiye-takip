@@ -6,7 +6,7 @@ Bu güncelleme mevcut kayıtları silmez ve mevcut operasyon tablolarını deği
 - `user_permissions`: kullanıcıya verilen yetkiler
 - `users.permissions_configured`: özel izin listesinin uygulanıp uygulanmadığı
 
-Migration mevcut kullanıcıların erişimini koruyacak şekilde varsayılan izinleri otomatik atar. Mevcut şirket yöneticileri önceki yönetim yetkilerini, personel hesapları önceki kayıt ekleme yetkilerini korur.
+Migration mevcut kullanıcıların erişimini koruyacak şekilde varsayılan izinleri otomatik atar. Mevcut şirket yöneticileri önceki yönetim yetkilerini, personel hesapları önceki kayıt ekleme yetkilerini korur. Araç ve tanker için ekleme, düzenleme ve silme yetkileri ayrı seçeneklerdir; eski toplu yetkiler geriye dönük çalışmaya devam eder.
 
 ## Canlıya almadan önce
 
@@ -39,10 +39,11 @@ php artisan route:list --path=kullanicilar
 3. “Kullanıcı yetkileri” bölümünden izinleri seçin.
 4. `Tanker stoklarını görüntüleme` yalnızca görüntüleme sağlar.
 5. `Tankere yakıt alımı ekleme` tankere yakıt alımı ekler.
-6. `Tanker ekleme / düzenleme / silme` tanker tanımlarını yönetir.
+6. `Tanker ekleyebilme`, `Tanker düzenleyebilme`, `Tanker silebilme` ayrı ayrı verilebilir.
 7. `Araç ve makineleri görüntüleme` listeyi açar.
-8. `Araç / makine ekleme / düzenleme / silme` filo tanımlarını yönetir.
-9. Diğer `Kasa`, `Yakıt`, `Bakım`, `Rapor`, `Geçmiş` ve `Kullanıcı` izinleri aynı şekilde ayrı ayrı verilebilir.
+8. `Araç / makine ekleyebilme`, `Araç / makine düzenleyebilme`, `Araç / makine silebilme` ayrı ayrı verilebilir.
+9. `Kasa hareket raporu PDF/Excel` ve `Yakıt raporu PDF/Excel` izinleri, rapor ekranını görüntüleme yetkisinden bağımsız olarak ayrı ayrı kontrol edilir.
+10. Rapor ekranındaki filtreler dışa aktarma bağlantılarına aynen taşınır; personel filtresiyle kişiye özel kasa raporu alınabilir.
 
 ## Geri dönüş
 
