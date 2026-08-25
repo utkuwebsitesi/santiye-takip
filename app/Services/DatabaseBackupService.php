@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use RuntimeException;
 use Symfony\Component\Process\Process;
@@ -21,6 +22,13 @@ class DatabaseBackupService
         $stamp = now()->format('Ymd-His');
         $finalPath = $directory.DIRECTORY_SEPARATOR."santiye360-{$stamp}.sql.gz";
         $partialPath = $finalPath.'.part';
+
+        // Some shared cPanel hosts disable proc_open. Keep scheduled backups
+        // working with a streamed PDO dump instead of failing silently.
+        if (! function_exists('proc_open')) {
+            return $this->createWithPdo($finalPath, $partialPath);
+        }
+
         $credentialsPath = $directory.DIRECTORY_SEPARATOR.'.mysql-backup-'.bin2hex(random_bytes(8)).'.cnf';
         $stream = null;
 
@@ -79,6 +87,54 @@ class DatabaseBackupService
     private function option(string $value): string
     {
         return '"'.str_replace(['\\', '"', "\r", "\n"], ['\\\\', '\\"', '', ''], $value).'"';
+    }
+
+    private function createWithPdo(string $finalPath, string $partialPath): string
+    {
+        $stream = gzopen($partialPath, 'wb9');
+        throw_unless($stream !== false, new RuntimeException('Yedek dosyası oluşturulamadı.'));
+
+        try {
+            $pdo = DB::connection()->getPdo();
+            $pdo->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
+            gzwrite($stream, "SET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS=0;\n\n");
+
+            $tables = $pdo->query("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'")->fetchAll(\PDO::FETCH_COLUMN);
+            foreach ($tables as $table) {
+                $quotedTable = '`'.str_replace('`', '``', (string) $table).'`';
+                $create = $pdo->query('SHOW CREATE TABLE '.$quotedTable)->fetch(\PDO::FETCH_ASSOC);
+                $createSql = (string) ($create['Create Table'] ?? '');
+                gzwrite($stream, "DROP TABLE IF EXISTS {$quotedTable};\n{$createSql};\n");
+
+                foreach ($pdo->query('SELECT * FROM '.$quotedTable) as $row) {
+                    $values = [];
+                    foreach ($row as $value) {
+                        $values[] = $value === null ? 'NULL' : $pdo->quote((string) $value);
+                    }
+                    $columns = array_map(
+                        fn ($column): string => str_replace('`', '``', (string) $column),
+                        array_keys($row)
+                    );
+                    gzwrite($stream, 'INSERT INTO '.$quotedTable.' (`'.implode('`,`', $columns).'`) VALUES ('.implode(',', $values).');'."\n");
+                }
+                gzwrite($stream, "\n");
+            }
+
+            gzwrite($stream, "SET FOREIGN_KEY_CHECKS=1;\n");
+            gzclose($stream);
+            throw_unless(filesize($partialPath) > 100, new RuntimeException('Oluşturulan yedek beklenenden küçük.'));
+            throw_unless(rename($partialPath, $finalPath), new RuntimeException('Yedek tamamlanamadı.'));
+            File::put($finalPath.'.sha256', hash_file('sha256', $finalPath).'  '.basename($finalPath).PHP_EOL, true);
+            $this->prune();
+
+            return $finalPath;
+        } catch (Throwable $exception) {
+            if (is_resource($stream)) {
+                gzclose($stream);
+            }
+            @unlink($partialPath);
+            throw $exception;
+        }
     }
 
     private function prune(): void
